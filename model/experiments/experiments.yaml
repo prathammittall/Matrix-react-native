@@ -1,0 +1,102 @@
+# MATRIX Phase 2 — ablation configurations. PREPARED ONLY, NOT RUN.
+#
+# Every experiment reuses the frozen split from
+# model/preprocessing/training_dataset/core/split_manifest.csv.
+# Drivers F/G/H stay reserved for the later OOD experiment and appear in none of these.
+#
+# Run with:  python model/experiments/run_experiment.py --exp A
+
+common:
+  seed: 1337
+  deterministic: true
+  optimizer: Adam
+  learning_rate: 0.001
+  batch_size: 256
+  max_epochs: 80
+  early_stopping_patience: 12
+  lr_scheduler: {type: ReduceLROnPlateau, factor: 0.5, patience: 4, min_lr: 1.0e-6}
+  window_samples: 50
+  targets: [target_v_forward, target_yaw_rate]
+  excluded_targets: [target_v_lateral]
+  model: MatrixBaseline            # unchanged, so differences are attributable to the data
+  loss: inherit_from_baseline      # use the loss selected in Phase 1
+  selection_metric: validation mean normalised RMSE
+  test_used_for_selection: false
+
+experiments:
+
+  A:
+    name: baseline_6_core_imu
+    status: COMPLETED in Phase 1
+    description: 6 core IMU channels, high-confidence VBOX targets only.
+    array: X_{split}.npy
+    feature_indices: [0, 1, 2, 3, 4, 5]
+    features: [acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z]
+    target_confidence: [high]
+    sample_weighting: none
+
+  B:
+    name: engineered_11_features
+    status: PREPARED
+    description: >
+      All 11 engineered channels. Tests whether explicitly removing gravity
+      (linear_acc) and adding rotation-invariant magnitudes helps, given that the
+      phone-to-vehicle rotation is NOT applied and acc_z carries a ~9.8 m/s^2 offset.
+    array: X_ext_{split}.npy
+    feature_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    features: [acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z,
+               linear_acc_x, linear_acc_y, linear_acc_z, acc_mag, gyro_mag]
+    target_confidence: [high]
+    sample_weighting: none
+    note: >
+      Requires refitting the scaler on the train split for all 11 channels.
+      Never reuse the 6-channel scaler.
+
+  C:
+    name: high_plus_medium_confidence
+    status: PREPARED — requires a dataset rebuild
+    description: >
+      Adds the 20 medium-confidence VBOX sessions (+275,453 target rows), which roughly
+      quadruples Driver E's contribution (63,714 -> 339,167 rows) and restores the
+      aggressive-driving manoeuvre diversity the strict filter removed.
+    rebuild_required: true
+    rebuild_command: >
+      python model/preprocessing/pass12_build_training.py
+      --confidence high,medium --out training_dataset/core_hc_mc
+    feature_indices: [0, 1, 2, 3, 4, 5]
+    target_confidence: [high, medium]
+    sample_weighting: none
+    split_rule: >
+      Keep the SAME test sessions (Driver B) and the same validation sessions. New
+      medium-confidence sessions may only enter TRAIN, so the comparison against
+      experiment A stays valid on an unchanged evaluation set.
+
+  D:
+    name: confidence_weighted
+    status: PREPARED — requires a dataset rebuild
+    description: >
+      Same data as C, but each sample is weighted by target confidence so that the
+      noisier medium-confidence supervision contributes less gradient.
+    rebuild_required: true
+    feature_indices: [0, 1, 2, 3, 4, 5]
+    target_confidence: [high, medium]
+    sample_weighting:
+      type: per_sample_weight_in_loss
+      weights: {high: 1.0, medium: 0.5}
+      rationale: >
+        Medium confidence mostly reflects lag uncertainty (wall-clock alignment
+        corroborated by a weak cross-correlation), not bad sensor data. A 0.5 weight is a
+        starting point; sweep {0.25, 0.5, 0.75} before drawing conclusions.
+      implementation: >
+        reduction='none' on the criterion, multiply by the weight vector, then mean.
+
+reserved_not_for_training:
+  ood_experiment:
+    drivers: [F, G, H]
+    phones: [MotorolaMotoG7Power, BlackberryPriv, HuaweiP20Pro]
+    vehicles: [RenaultMegane, VolvoXC70, ToyotaCorollaVerso]
+    supervision: GPS only (~0.11 Hz, median 1.06% of rows carry a target)
+    reason: >
+      Different phones, vehicles and a far sparser supervision signal. These are the only
+      way to test cross-device generalisation, which the VBOX split cannot show because
+      all 45 VBOX sessions are one phone in one vehicle. Keep strictly held out.

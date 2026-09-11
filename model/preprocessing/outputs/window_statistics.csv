@@ -1,0 +1,13 @@
+window_samples,window_seconds,split,stride,n_windows,target_invalid,target_not_vbox,target_not_high,internal_time_gap,nonfinite_features,nonfinite_target
+10,1.0,train,10,25715,68,0,0,0,0,0
+10,1.0,validation,10,5559,11,0,0,0,0,0
+10,1.0,test,10,10591,4,0,0,1,0,0
+20,2.0,train,20,12857,31,0,0,0,0,0
+20,2.0,validation,20,2778,6,0,0,0,0,0
+20,2.0,test,20,5294,3,0,0,1,0,0
+50,5.0,train,5,51299,111,1,0,0,0,0
+50,5.0,validation,50,1110,2,0,0,0,0,0
+50,5.0,test,50,2117,0,0,0,1,0,0
+100,10.0,train,100,2564,6,0,0,0,0,0
+100,10.0,validation,100,554,1,0,0,0,0,0
+100,10.0,test,100,1058,0,0,0,1,0,0

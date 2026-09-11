@@ -1,0 +1,116 @@
+pair_base,s_id,v_id,has_S,has_V,in_sync_folder,verdict,reason,s_rows,v_sync_rows,v_full_rows,v_sync_trimmed,row_delta,row_aligned,bbox_iou,track_med_dist_m,track_p90_dist_m,time_overlap_frac,needs_bst_shift,s_date,clock_offset_s
+a1,S-A1,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a10,S-A10,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a11,S-A11,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a12,S-A12,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a13,S-A13,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a2,S-A2,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a3,S-A3,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a4,S-A4,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a5,S-A5,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a6,S-A6,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a7,S-A7,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a8,S-A8,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+a9,S-A9,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+i,S-I,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+m,S-M,V-M,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,105974.0,105974.0,105995.0,True,0.0,True,0.9983,14.6,46.32,0.9997,True,2019-09-07,-3601.1
+s1,S-S1,V-S1,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,51746.0,51746.0,51790.0,True,0.0,True,0.9984,10.49,31.92,0.9999,True,2019-09-08,-3600.6
+s2,S-S2,V-S2,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,93876.0,93876.0,93900.0,True,0.0,True,0.9994,11.7,36.03,0.9994,True,2019-09-08,-3607.3
+s3a,S-S3a,V-S3a,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,24621.0,24621.0,24660.0,True,0.0,True,0.9956,18.47,51.83,0.9989,True,2019-09-04,-3593.5
+s3b,S-S3b,V-S3b,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,6813.0,6813.0,6840.0,True,0.0,True,0.9276,9.2,25.71,0.9928,True,2019-09-04,-3600.7
+s3c,S-S3c,V-S3c,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,37183.0,37183.0,37220.0,True,0.0,True,0.9979,17.23,53.21,0.9998,True,2019-09-04,-3600.7
+s4,S-S4,V-S4,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,94600.0,94600.0,97824.0,True,0.0,True,0.9963,14.64,45.83,1.0,True,2019-09-06,-3601.7
+st1,,V-St1,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+st4,,V-St4,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+st6,,V-St6,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+st7,,V-St7,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t1,S-T1,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t10,S-T10,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t11,S-T11,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t2,S-T2,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t3,S-T3,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t4,S-T4,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t5,S-T5,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t6,S-T6,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t7,S-T7,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t8,S-T8,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+t9,S-T9,,True,False,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfa01,S-Vfa01,V-Vfa01,True,True,True,SYNC_CLAIMED_NOT_TRIMMED,in Synchronised folder but V identical to untrimmed V_full,11486.0,11535.0,11535.0,False,49.0,False,0.9946,34.25,78.9,1.0,False,2019-11-08,-4.2
+vfa02,S-Vfa02,V-Vfa02,True,True,True,SYNC_CLAIMED_NOT_TRIMMED,in Synchronised folder but V identical to untrimmed V_full,67523.0,67755.0,67755.0,False,232.0,False,0.9993,52.11,104.92,1.0,False,2019-11-08,-7.8
+vfb01a,,V-Vfb01a,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb01b,,V-Vfb01b,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb01c,,V-Vfb01c,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb01d,,V-Vfb01d,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02a,,V-Vfb02a,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02b,,V-Vfb02b,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02c,,V-Vfb02c,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02d,,V-Vfb02d,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02e,,V-Vfb02e,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02f,,V-Vfb02f,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vfb02g,,V-Vfb02g,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vta10,S-Vta10,V-Vta10,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1502.0,1502.0,1570.0,True,0.0,True,0.8904,51.89,107.19,0.9974,False,2019-11-06,-0.5
+vta11,S-Vta11,V-Vta11,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,510.0,510.0,589.0,True,0.0,True,0.8612,26.41,62.4,0.9923,False,2019-11-06,-0.5
+vta12,S-Vta12,V-Vta12,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,610.0,610.0,690.0,True,0.0,True,0.8446,37.98,66.53,0.9969,False,2019-11-06,-0.3
+vta13,S-Vta13,V-Vta13,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,404.0,404.0,473.0,True,0.0,True,0.5996,52.26,95.51,0.9928,False,2019-11-06,-0.4
+vta14,S-Vta14,V-Vta14,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,2885.0,2885.0,2893.0,True,0.0,True,0.9853,41.16,75.32,0.998,False,2019-11-06,-0.7
+vta15,S-Vta15,V-Vta15,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,833.0,833.0,869.0,True,0.0,True,0.9664,45.08,80.42,0.9653,False,2019-11-06,-3.0
+vta16,S-Vta16,V-Vta16,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,11335.0,11335.0,11361.0,True,0.0,True,0.9785,23.65,60.68,0.9985,False,2019-11-06,-1.8
+vta17,S-Vta17,V-Vta17,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,4519.0,4519.0,4594.0,True,0.0,True,0.9616,17.25,40.55,0.9965,False,2019-11-06,-0.5
+vta18,,V-Vta18,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vta19,S-Vta19,V-Vta19,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,292.0,292.0,310.0,True,0.0,True,0.9502,11.84,42.74,0.9869,False,2019-11-06,-0.5
+vta1a,S-Vta1a,V-Vta1a,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,25676.0,25676.0,25821.0,True,0.0,True,0.9996,4.51,8.5,1.0,False,2019-11-06,13.6
+vta1b,S-Vta1b,V-Vta1b,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,954.0,953.0,956.0,True,-1.0,True,0.9731,4.68,7.63,0.9941,False,2019-11-06,-0.5
+vta2,S-Vta2,V-Vta2,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,10991.0,10991.0,10995.0,True,0.0,True,0.9983,2.82,5.84,0.9992,False,2019-11-06,-1.0
+vta20,S-Vta20,V-Vta20,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,3223.0,3223.0,3223.0,False,0.0,True,0.9506,4.52,19.73,0.9171,False,2019-11-06,-26.7
+vta21,S-Vta21,V-Vta21,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,2079.0,2079.0,2088.0,True,0.0,True,0.9322,27.48,66.83,0.9604,False,2019-11-06,-8.3
+vta22,S-Vta22,V-Vta22,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1564.0,1564.0,1572.0,True,0.0,True,0.9609,22.24,45.63,0.9762,False,2019-11-06,-3.8
+vta23,S-Vta23,V-Vta23,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1110.0,1110.0,1119.0,True,0.0,True,0.8981,24.36,45.05,0.9926,False,2019-11-06,-0.9
+vta24,S-Vta24,V-Vta24,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1171.0,1171.0,1184.0,True,0.0,True,0.972,12.11,45.06,0.9998,False,2019-11-06,-0.1
+vta25,S-Vta25,V-Vta25,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,646.0,646.0,646.0,False,0.0,True,0.8672,1.85,4.71,0.9802,False,2019-11-06,1.3
+vta26,S-Vta26,V-Vta26,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1935.0,1935.0,1947.0,True,0.0,True,0.936,6.25,40.09,0.9937,False,2019-11-06,-1.3
+vta27,S-Vta27,V-Vta27,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,2540.0,2540.0,2853.0,True,0.0,True,0.8609,32.37,88.74,1.0,False,2019-11-06,27.2
+vta28,S-Vta28,V-Vta28,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,4210.0,4210.0,4219.0,True,0.0,True,0.9878,15.82,46.63,0.9986,False,2019-11-06,1.4
+vta29,S-Vta29,V-Vta29,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,23705.0,23705.0,23737.0,True,0.0,True,0.9853,19.27,52.95,0.999,False,2019-11-06,5.4
+vta3,S-Vta3,V-Vta3,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,645.0,645.0,875.0,True,0.0,True,0.4746,5.71,15.2,1.0,False,2019-11-06,20.1
+vta30,S-Vta30,V-Vta30,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,17136.0,17136.0,17179.0,True,0.0,True,0.9751,6.76,36.26,1.0,False,2019-11-06,-2.3
+vta4,S-Vta4,V-Vta4,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1789.0,1789.0,1809.0,True,0.0,True,0.9844,23.4,45.44,0.9883,False,2019-11-06,-2.2
+vta5,S-Vta5,V-Vta5,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,307.0,307.0,357.0,True,0.0,True,0.7774,24.82,45.59,0.9775,False,2019-11-06,-0.8
+vta6,S-Vta6,V-Vta6,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1376.0,1376.0,1393.0,True,0.0,True,0.9579,38.75,71.78,0.9841,False,2019-11-06,-2.3
+vta7,S-Vta7,V-Vta7,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,840.0,840.0,857.0,True,0.0,True,0.938,32.31,85.16,0.9822,False,2019-11-06,-1.6
+vta8,S-Vta8,V-Vta8,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,3676.0,3676.0,3697.0,True,0.0,True,0.9493,16.97,52.68,0.9968,False,2019-11-06,-1.3
+vta9,S-Vta9,V-Vta9,True,True,True,SYNC_ROW_ALIGNED_SPATIAL_UNVERIFIED,row counts match but GPS tracks do not coincide,156.0,156.0,226.0,True,0.0,True,0.0,47.93,109.63,0.9877,False,2019-11-06,-0.3
+vtb1,S-Vtb1,V-Vtb1,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,32459.0,32459.0,32459.0,False,0.0,True,0.9849,31.89,488.64,0.9998,False,2019-11-06,0.7
+vtb10,S-Vtb10,V-Vtb10,True,True,True,SYNC_ROW_ALIGNED_SPATIAL_UNVERIFIED,row counts match but GPS tracks do not coincide,196.0,195.0,195.0,False,-1.0,True,0.1989,25.17,60.9,0.9703,False,2019-11-06,-0.5
+vtb11,S-Vtb11,V-Vtb11,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,361.0,361.0,433.0,True,0.0,True,0.9545,43.89,78.54,1.0,False,2019-11-06,1.6
+vtb12,S-Vtb12,V-Vtb12,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,447.0,447.0,490.0,True,0.0,True,0.5679,23.71,48.42,1.0,False,2019-11-06,1.6
+vtb13,,V-Vtb13,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,
+vtb2,S-Vtb2,V-Vtb2,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,5712.0,5712.0,5712.0,False,0.0,True,0.9827,14.53,44.18,0.9984,False,2019-11-06,0.9
+vtb3,S-Vtb3,V-Vtb3,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,8240.0,8240.0,8289.0,True,0.0,True,0.2038,4.3,9.35,1.0,False,2019-11-06,1.4
+vtb4,S-Vtb4,V-Vtb4,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,556.0,556.0,625.0,True,0.0,True,0.7552,11.5,25.34,1.0,False,2019-11-06,0.4
+vtb5,S-Vtb5,V-Vtb5,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,64388.0,64388.0,64610.0,True,0.0,True,0.9969,31.76,84.85,0.999,False,2019-11-06,28.3
+vtb6,S-Vtb6,V-Vtb6,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,498.0,498.0,508.0,True,0.0,True,0.8244,41.3,71.66,0.9875,False,2019-11-06,1.5
+vtb7,S-Vtb7,V-Vtb7,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,461.0,461.0,461.0,False,0.0,True,0.9205,33.84,68.69,0.9604,False,2019-11-06,1.8
+vtb8,S-Vtb8,V-Vtb8,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,668.0,668.0,699.0,True,0.0,True,0.8774,42.0,75.94,1.0,False,2019-11-06,1.6
+vtb9,S-Vtb9,V-Vtb9,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,452.0,452.0,457.0,True,0.0,True,0.9649,48.52,87.12,0.9729,False,2019-11-06,1.6
+vw1,S-Vw1,V-Vw1,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,20476.0,20475.0,20475.0,False,-1.0,True,0.0,1.74,2.16,0.9509,False,2020-01-08,-100.4
+vw10,S-Vw10,V-Vw10,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,652.0,652.0,670.0,True,0.0,True,0.8887,23.55,51.83,1.0,False,2020-01-08,0.5
+vw11,S-Vw11,V-Vw11,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,4909.0,4909.0,4924.0,True,0.0,True,0.9381,22.48,64.58,0.9969,False,2020-01-08,-1.5
+vw12,S-Vw12,V-Vw12,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,918.0,918.0,1069.0,True,0.0,True,0.9754,56.54,100.6,1.0,False,2020-01-08,-4.0
+vw13,S-Vw13,V-Vw13,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,284.0,284.0,297.0,True,0.0,True,0.9099,59.01,110.45,0.9647,False,2020-01-08,-1.0
+vw14a,S-Vw14a,V-Vw14a,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,3138.0,3138.0,3140.0,True,0.0,True,0.9917,54.71,101.1,0.9848,False,2020-01-08,-4.9
+vw14b,S-Vw14b,V-Vw14b,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,19588.0,19588.0,19600.0,True,0.0,True,0.9966,46.82,93.11,0.9981,False,2020-01-08,-3.9
+vw14c,S-Vw14c,V-Vw14c,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,15826.0,15826.0,15857.0,True,0.0,True,0.9977,13.69,69.43,0.9988,False,2020-01-08,-2.0
+vw15,S-Vw15,V-Vw15,True,True,True,SYNC_CLAIMED_NOT_TRIMMED,in Synchronised folder but V identical to untrimmed V_full,1380.0,1391.0,1391.0,False,11.0,False,0.0,3.38,4.07,0.9859,False,2020-01-08,-3.0
+vw16a,S-Vw16a,V-Vw16a,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,5879.0,5879.0,6000.0,True,0.0,True,0.9361,30.49,73.09,1.0,False,2020-01-08,10.2
+vw16b,S-Vw16b,V-Vw16b,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1126.0,1126.0,1171.0,True,0.0,True,0.9221,27.92,60.64,1.0,False,2020-01-08,0.2
+vw17,S-Vw17,V-Vw17,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,329.0,329.0,329.0,False,0.0,True,0.7376,38.66,68.38,0.9512,False,2020-01-08,-1.6
+vw2,S-Vw2,V-Vw2,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,52713.0,52712.0,52712.0,False,-1.0,True,0.9997,37.3,87.5,0.9996,False,2020-01-08,-1.9
+vw3,S-Vw3,V-Vw3,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,3861.0,3861.0,3941.0,True,0.0,True,0.9958,23.87,61.34,1.0,False,2020-01-08,0.0
+vw4,S-Vw4,V-Vw4,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,126526.0,126527.0,126573.0,True,1.0,True,0.9995,26.98,87.71,1.0,False,2020-01-08,-0.3
+vw5,S-Vw5,V-Vw5,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1012.0,1012.0,1050.0,True,0.0,True,0.9621,12.9,29.72,0.9733,False,2020-01-08,-2.8
+vw6,S-Vw6,V-Vw6,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1281.0,1281.0,1288.0,True,0.0,True,0.9675,16.92,34.68,0.9945,False,2020-01-08,1.3
+vw7,S-Vw7,V-Vw7,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1602.0,1602.0,1689.0,True,0.0,True,0.9132,14.76,33.54,0.0056,False,2020-01-08,167.8
+vw8,S-Vw8,V-Vw8,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,1529.0,1529.0,1599.0,True,0.0,True,0.8935,11.37,30.04,0.0,False,2020-01-08,161.0
+vw9,S-Vw9,V-Vw9,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,552.0,553.0,601.0,True,1.0,True,0.9741,15.21,32.53,0.9927,False,2020-01-08,-0.5
+y1,S-Y1,V-Y1,True,True,True,SYNC_ROW_ALIGNED,V trimmed to same row count as S and GPS tracks coincide,70285.0,70285.0,70341.0,True,0.0,True,0.9979,13.03,41.17,1.0,True,2019-08-30,-3605.8
+y2,,V-Y2,False,True,False,NO_COUNTERPART,only one of S/V exists for this ID,,,,,,,,,,,,,

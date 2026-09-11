@@ -1,0 +1,39 @@
+# MATRIX — pinned dependencies
+#
+# Versions match the environment the frozen models were trained and verified on:
+#   Windows 11 (10.0.26200) · Python 3.13.12 · NVIDIA RTX 3050 6 GB · CUDA 12.6
+#
+# INSTALL (PowerShell, from the project root, venv activated):
+#   pip install -r requirements.txt
+#
+# The extra index below is required: torch==2.10.0+cu126 is a CUDA build published by
+# PyTorch, not on PyPI. Everything else resolves from PyPI as normal.
+# Download is large (the CUDA torch wheel is ~2.5 GB) — allow time on first install.
+#
+# CPU-ONLY MACHINE: delete the --extra-index-url line and the "+cu126" suffix, i.e. use
+#   torch==2.10.0
+# Everything runs on CPU (DEVICE falls back automatically); training is several times
+# slower but the ~6-minute runs remain practical.
+
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+# --- deep learning -----------------------------------------------------------
+torch==2.10.0+cu126
+
+# --- numerics / data ---------------------------------------------------------
+numpy==2.1.2
+pandas==2.2.3
+scipy==1.16.2            # scipy.signal.correlate — S/V lag estimation (pass9)
+pyarrow==25.0.1          # parquet engine for pandas read_parquet/to_parquet
+
+# --- plotting ----------------------------------------------------------------
+matplotlib==3.9.2        # trajectory, drift and training-curve plots
+
+# --- NOT required by any committed script ------------------------------------
+# pypdf==6.18.1          # only used once, ad-hoc, to extract model/dataset/README_1.pdf
+#                        # into preprocessing/outputs/readme_pdf.txt, which is committed.
+#                        # Uncomment only if you want to regenerate that text file.
+#
+# torchvision / torchaudio are NOT used.
+# pyyaml and scikit-learn are NOT imported by any MATRIX script; the *.yaml files are
+# frozen configuration records read by humans, not parsed by code.

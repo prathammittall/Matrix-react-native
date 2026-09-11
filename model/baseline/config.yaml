@@ -1,0 +1,79 @@
+# MATRIX Phase 1 — baseline configuration
+# Frozen record of exactly what produced model/baseline/checkpoints/.
+
+dataset:
+  version: matrix-core-v1-vbox-high-confidence
+  root: model/preprocessing/training_dataset/core
+  supervision: VBOX only, high-confidence targets only
+  excluded: [GPS-supervised sessions, medium-confidence VBOX sessions,
+             drivers F/G/H (reserved for OOD)]
+  sampling_rate_hz: 10.0          # verified, dt_median == 0.1000 s on all sessions
+  window_samples: 50
+  window_seconds: 5.0
+  causal: true
+  target_position: last sample of window
+  overlap:
+    train: 90%   # stride 5
+    validation: 0%   # stride 50
+    test: 0%     # stride 50
+  splits:
+    train: {sessions: 18, windows: 51299, drivers: [A, E]}
+    validation: {sessions: 5, windows: 1110, drivers: [A, E]}
+    test: {sessions: 2, windows: 2117, drivers: [B]}   # unseen driver
+
+features:
+  set: A
+  n_channels: 6
+  names: [acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z]
+  bias_corrected: true            # applied at dataset build, 27/45 sessions have estimates
+  gravity_subtracted_from_acc: false   # acc_* is raw specific force; linear_acc_* is set B
+  rotation_applied: false         # per-session rotation deliberately NOT used
+  never_used_as_input: [gps_latitude, gps_longitude, gps_speed_kmh, gps_bearing_deg,
+                        gps_accuracy_m, gps_satellites_used, gps_satellites_visible,
+                        magnetometer, orientation, vbox_channels]
+
+targets:
+  names: [target_v_forward, target_yaw_rate]
+  units: [m/s, rad/s]
+  excluded: [target_v_lateral]    # established unobservable
+  standardised_for_loss: true     # train-only stats; metrics reported in physical units
+
+model:
+  name: MatrixBaseline
+  architecture: Conv1D -> Conv1D -> GRU -> Dense -> 2
+  layers:
+    - {type: Conv1d, in: 6, out: 64, kernel: 5, padding: 2}
+    - {type: BatchNorm1d, features: 64}
+    - {type: ReLU}
+    - {type: Dropout, p: 0.2}
+    - {type: Conv1d, in: 64, out: 128, kernel: 5, padding: 2}
+    - {type: BatchNorm1d, features: 128}
+    - {type: ReLU}
+    - {type: Dropout, p: 0.2}
+    - {type: GRU, input: 128, hidden: 128, layers: 1, batch_first: true}
+    - {type: TakeLastTimestep}
+    - {type: Linear, in: 128, out: 64}
+    - {type: ReLU}
+    - {type: Dropout, p: 0.2}
+    - {type: Linear, in: 64, out: 2}
+  activation: ReLU
+  dropout: 0.2
+
+training:
+  optimizer: Adam
+  learning_rate: 0.001
+  batch_size: 256
+  max_epochs: 80
+  early_stopping_patience: 12
+  lr_scheduler: {type: ReduceLROnPlateau, factor: 0.5, patience: 4, min_lr: 1.0e-6}
+  grad_clip_norm: 5.0
+  seed: 1337
+  deterministic: true             # cudnn.deterministic = True, benchmark = False
+  losses_compared: [mse, mae, huber]
+  selection_metric: validation mean normalised RMSE (loss-independent)
+  test_used_for_selection: false
+
+normalisation:
+  scaler: model/preprocessing/training_dataset/core/scaler/scaler.json
+  fitted_on: train split only
+  applied_at: load time (arrays on disk are raw)

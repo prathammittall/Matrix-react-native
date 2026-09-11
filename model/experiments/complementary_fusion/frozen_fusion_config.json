@@ -1,0 +1,48 @@
+{
+  "selected_config": "cf_tau20",
+  "mean_rank": 7.2,
+  "worst_horizon_change_pct": 3.883372335715629,
+  "median_final_err_by_outage": {
+    "10": 10.34,
+    "30": 58.51,
+    "60": 141.03,
+    "120": 328.5,
+    "300": 877.78
+  },
+  "pct_vs_abs_anchored": {
+    "10": -34.515516149461675,
+    "30": -18.099104143337065,
+    "60": -4.6256847230675575,
+    "120": 3.883372335715629,
+    "300": -0.9244105330880381
+  },
+  "alphas_tested": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "taus_tested": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    30,
+    60,
+    120,
+    300,
+    1000
+  ],
+  "yaw_source": "delta_v model (common to every variant)",
+  "anchor": "ground-truth velocity at outage start (common to every variant)",
+  "selection_rule": "mean rank across 10/30/60/120/300 s on VALIDATION",
+  "test_used_for_selection": false
+}

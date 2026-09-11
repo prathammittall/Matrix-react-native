@@ -1,0 +1,57 @@
+{
+  "fitted_on": "train split only",
+  "n_train_windows": 51299,
+  "n_train_samples_flat": 2564950,
+  "feature_names": [
+    "acc_x",
+    "acc_y",
+    "acc_z",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "linear_acc_x",
+    "linear_acc_y",
+    "linear_acc_z",
+    "acc_mag",
+    "gyro_mag"
+  ],
+  "feature_mean": [
+    -0.10115599632263184,
+    0.030047999694943428,
+    9.85080337524414,
+    -3.600000127335079e-05,
+    0.00013800000306218863,
+    4.099999932805076e-05,
+    -0.10114400088787079,
+    0.03009199909865856,
+    -0.008456000126898289,
+    10.002249717712402,
+    0.15769700706005096
+  ],
+  "feature_std": [
+    1.2865869998931885,
+    1.349892020225525,
+    0.6187450289726257,
+    0.12910400331020355,
+    0.18197999894618988,
+    0.09229200333356857,
+    1.283789038658142,
+    1.3479100465774536,
+    0.6161450147628784,
+    0.6887019872665405,
+    0.18323899805545807
+  ],
+  "target_names": [
+    "target_v_forward",
+    "target_yaw_rate"
+  ],
+  "target_mean": [
+    9.145593643188477,
+    -0.002322999993339181
+  ],
+  "target_std": [
+    6.400271892547607,
+    0.12870900332927704
+  ],
+  "note": "Arrays on disk are RAW (unscaled). Apply (x - mean)/std at load time. Validation and test statistics never contributed to this scaler."
+}

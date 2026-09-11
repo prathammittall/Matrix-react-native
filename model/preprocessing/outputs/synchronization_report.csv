@@ -1,0 +1,82 @@
+dataset_id,v_dataset_id,session_id,n_rows,verdict,estimated_lag_seconds,time_offset_seconds,wall_clock_residual_s,predicted_lag_from_clock_s,lag_methods_agree,recommended_shift_seconds,alignment_method,correlation_used,correlation_r,confidence,usable_for_vbox_supervision,note,bst_like_offset
+S-M,V-M,S-M_s00,44226,SYNC_ROW_ALIGNED,-0.9,3601.11,1.106,-1.106,True,-0.9,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9916,high,True,,True
+S-M,V-M,S-M_s01,61748,SYNC_ROW_ALIGNED,-2.9,3603.43,3.429,-3.429,True,-2.9,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9499,high,True,,True
+S-S1,V-S1,S-S1_s00,51746,SYNC_ROW_ALIGNED,-0.2,3600.54,0.545,-0.545,True,-0.2,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9939,high,True,,True
+S-S2,V-S2,S-S2_s00,1864,SYNC_ROW_ALIGNED,-7.6,3607.34,7.341,-7.341,True,-7.6,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.8341,high,True,,True
+S-S2,V-S2,S-S2_s01,92012,SYNC_ROW_ALIGNED,-8.7,3608.45,8.449,-8.449,True,-8.7,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9905,high,True,,True
+S-S3a,V-S3a,S-S3a_s00,24621,SYNC_ROW_ALIGNED,6.7,3593.49,-6.507,6.507,True,6.7,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9927,high,True,,True
+S-S3b,V-S3b,S-S3b_s00,2043,SYNC_ROW_ALIGNED,-0.4,3600.69,0.693,-0.693,True,-0.4,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.7727,high,True,,True
+S-S3b,V-S3b,S-S3b_s01,4770,SYNC_ROW_ALIGNED,-4.8,3605.02,5.021,-5.021,True,-4.8,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9995,high,True,,True
+S-S3c,V-S3c,S-S3c_s00,37183,SYNC_ROW_ALIGNED,-0.5,3600.72,0.721,-0.721,True,-0.5,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.999,high,True,,True
+S-S4,V-S4,S-S4_s00,35186,SYNC_ROW_ALIGNED,-1.8,3601.71,1.711,-1.711,True,-1.8,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9916,high,True,,True
+S-S4,V-S4,S-S4_s01,55781,SYNC_ROW_ALIGNED,47.7,3913.75,313.753,-313.753,False,,none,gyro_y_vs_yawrate,-0.0724,unusable,False,no usable correlation (|r|=0.07),False
+S-S4,V-S4,S-S4_s02,3633,SYNC_ROW_ALIGNED,31.4,3914.92,314.917,-314.917,False,-314.917,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,-0.2053,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vfa01,V-Vfa01,S-Vfa01_s00,11486,SYNC_CLAIMED_NOT_TRIMMED,-5.2,4.24,4.236,-4.236,True,-5.2,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6031,high,False,pair verdict SYNC_CLAIMED_NOT_TRIMMED,False
+S-Vfa02,V-Vfa02,S-Vfa02_s00,67523,SYNC_CLAIMED_NOT_TRIMMED,-8.8,7.75,7.749,-7.749,True,-7.749,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4632,medium,False,pair verdict SYNC_CLAIMED_NOT_TRIMMED,False
+S-Vta10,V-Vta10,S-Vta10_s00,1502,SYNC_ROW_ALIGNED,-0.1,0.49,0.493,-0.493,True,-0.493,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4457,medium,True,,False
+S-Vta11,V-Vta11,S-Vta11_s00,510,SYNC_ROW_ALIGNED,-0.4,0.49,0.493,-0.493,True,-0.4,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9043,high,True,,False
+S-Vta12,V-Vta12,S-Vta12_s00,610,SYNC_ROW_ALIGNED,-0.8,0.29,0.293,-0.293,True,-0.293,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.3376,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta13,V-Vta13,S-Vta13_s00,404,SYNC_ROW_ALIGNED,0.0,0.39,0.393,-0.393,True,-0.393,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4054,medium,True,,False
+S-Vta14,V-Vta14,S-Vta14_s00,2885,SYNC_ROW_ALIGNED,27.1,0.69,0.693,-0.693,False,-0.693,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.2937,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta15,V-Vta15,S-Vta15_s00,833,SYNC_ROW_ALIGNED,3.2,2.99,2.993,-2.993,False,-2.993,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,-0.3555,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta16,V-Vta16,S-Vta16_s00,11335,SYNC_ROW_ALIGNED,-1.7,1.79,1.793,-1.793,True,-1.7,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.623,high,True,,False
+S-Vta17,V-Vta17,S-Vta17_s00,4519,SYNC_ROW_ALIGNED,-1.5,1.68,1.677,-1.677,True,-1.677,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4678,medium,True,,False
+S-Vta19,V-Vta19,S-Vta19_s00,292,SYNC_ROW_ALIGNED,,,,,,,,none,,unusable,False,session too short to estimate lag (<300 rows),False
+S-Vta1a,V-Vta1a,S-Vta1a_s00,25676,SYNC_ROW_ALIGNED,13.8,-13.64,-13.637,13.637,True,13.8,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6747,high,True,,False
+S-Vta1b,V-Vta1b,S-Vta1b_s00,953,SYNC_ROW_ALIGNED,-0.7,0.46,0.463,-0.463,True,-0.463,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4643,medium,True,,False
+S-Vta2,V-Vta2,S-Vta2_s00,10991,SYNC_ROW_ALIGNED,-0.8,0.96,0.963,-0.963,True,-0.8,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.771,high,True,,False
+S-Vta20,V-Vta20,S-Vta20_s00,3223,SYNC_ROW_ALIGNED,5.8,26.72,26.722,-26.722,False,5.8,xcorr_only_wallclock_disagrees,abs_gyro_mag_vs_abs_yawrate,0.6362,medium,True,xcorr lag +5.8s vs wall-clock prediction -26.7s,False
+S-Vta21,V-Vta21,S-Vta21_s00,2079,SYNC_ROW_ALIGNED,-9.6,8.32,8.322,-8.322,True,-8.322,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.508,medium,True,,False
+S-Vta22,V-Vta22,S-Vta22_s00,1564,SYNC_ROW_ALIGNED,-4.8,3.82,3.822,-3.822,True,-3.822,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.5549,medium,True,,False
+S-Vta23,V-Vta23,S-Vta23_s00,1110,SYNC_ROW_ALIGNED,-1.8,0.92,0.922,-0.922,True,-0.922,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.3956,medium,True,,False
+S-Vta24,V-Vta24,S-Vta24_s00,1171,SYNC_ROW_ALIGNED,-1.0,0.12,0.122,-0.122,True,-1.0,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.7554,high,True,,False
+S-Vta25,V-Vta25,S-Vta25_s00,646,SYNC_ROW_ALIGNED,0.2,-1.28,-1.278,1.278,True,0.2,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.9176,high,True,,False
+S-Vta26,V-Vta26,S-Vta26_s00,1935,SYNC_ROW_ALIGNED,30.4,1.32,1.322,-1.322,False,-1.322,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.4823,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta27,V-Vta27,S-Vta27_s00,2540,SYNC_ROW_ALIGNED,-4.8,-27.18,-27.178,27.178,False,27.178,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.279,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta28,V-Vta28,S-Vta28_s00,4210,SYNC_ROW_ALIGNED,0.4,-1.38,-1.378,1.378,True,1.378,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.5147,medium,True,,False
+S-Vta29,V-Vta29,S-Vta29_s00,23705,SYNC_ROW_ALIGNED,4.3,-6.01,-6.013,6.013,True,6.013,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4131,medium,True,,False
+S-Vta3,V-Vta3,S-Vta3_s00,645,SYNC_ROW_ALIGNED,20.2,-20.11,-20.107,20.107,True,20.2,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.8774,high,True,,False
+S-Vta30,V-Vta30,S-Vta30_s00,17136,SYNC_ROW_ALIGNED,-3.6,2.29,2.286,-2.286,True,-2.286,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.5245,medium,True,,False
+S-Vta4,V-Vta4,S-Vta4_s00,1789,SYNC_ROW_ALIGNED,-1.8,2.19,2.193,-2.193,True,-2.193,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4311,medium,True,,False
+S-Vta5,V-Vta5,S-Vta5_s00,307,SYNC_ROW_ALIGNED,-0.4,0.79,0.793,-0.793,True,-0.4,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6889,high,True,,False
+S-Vta6,V-Vta6,S-Vta6_s00,1376,SYNC_ROW_ALIGNED,-13.1,2.29,2.293,-2.293,False,-2.293,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,-0.3209,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vta7,V-Vta7,S-Vta7_s00,840,SYNC_ROW_ALIGNED,-1.5,1.59,1.593,-1.593,True,-1.5,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6947,high,True,,False
+S-Vta8,V-Vta8,S-Vta8_s00,3676,SYNC_ROW_ALIGNED,-1.3,1.29,1.293,-1.293,True,-1.293,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4819,medium,True,,False
+S-Vta9,V-Vta9,S-Vta9_s00,156,SYNC_ROW_ALIGNED_SPATIAL_UNVERIFIED,,,,,,,,none,,unusable,False,session too short to estimate lag (<300 rows),False
+S-Vtb1,V-Vtb1,S-Vtb1_s00,684,SYNC_ROW_ALIGNED,-1.4,-0.66,-0.655,0.655,False,-1.4,xcorr_only_wallclock_disagrees,gyro_y_vs_yawrate,0.9116,medium,True,xcorr lag -1.4s vs wall-clock prediction +0.7s,False
+S-Vtb1,V-Vtb1,S-Vtb1_s01,31775,SYNC_ROW_ALIGNED,-1.0,-0.65,-0.655,0.655,True,0.655,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.3059,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb10,V-Vtb10,S-Vtb10_s00,196,SYNC_ROW_ALIGNED_SPATIAL_UNVERIFIED,,,,,,,,none,,unusable,False,session too short to estimate lag (<300 rows),False
+S-Vtb11,V-Vtb11,S-Vtb11_s00,361,SYNC_ROW_ALIGNED,3.9,-1.62,-1.624,1.624,False,1.624,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,-0.5054,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb12,V-Vtb12,S-Vtb12_s00,447,SYNC_ROW_ALIGNED,0.1,-1.62,-1.624,1.624,True,0.1,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.7423,high,True,,False
+S-Vtb2,V-Vtb2,S-Vtb2_s00,5712,SYNC_ROW_ALIGNED,-0.9,-0.92,-0.924,0.924,True,0.924,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4407,medium,True,,False
+S-Vtb3,V-Vtb3,S-Vtb3_s00,8240,SYNC_ROW_ALIGNED,-0.3,-1.42,-1.424,1.424,True,1.424,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.5144,medium,True,,False
+S-Vtb4,V-Vtb4,S-Vtb4_s00,556,SYNC_ROW_ALIGNED,17.8,-0.42,-0.424,0.424,False,0.424,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.4973,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb5,V-Vtb5,S-Vtb5_s00,64388,SYNC_ROW_ALIGNED,26.5,-28.32,-28.324,28.324,True,28.324,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.2882,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb6,V-Vtb6,S-Vtb6_s00,498,SYNC_ROW_ALIGNED,9.1,-1.52,-1.524,1.524,False,1.524,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.4262,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb7,V-Vtb7,S-Vtb7_s00,461,SYNC_ROW_ALIGNED,-2.7,-1.82,-1.824,1.824,False,1.824,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.365,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb8,V-Vtb8,S-Vtb8_s00,668,SYNC_ROW_ALIGNED,-7.5,-1.62,-1.624,1.624,False,1.624,wallclock_preferred_xcorr_weak,gyro_x_vs_yawrate,0.3764,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vtb9,V-Vtb9,S-Vtb9_s00,452,SYNC_ROW_ALIGNED,-5.8,-1.62,-1.624,1.624,False,1.624,wallclock_preferred_xcorr_weak,gyro_x_vs_yawrate,-0.3423,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw1,V-Vw1,S-Vw1_s00,20475,SYNC_ROW_ALIGNED,,100.42,,,,,,none,,unusable,False,no vehicle motion in session; lag unidentifiable,False
+S-Vw10,V-Vw10,S-Vw10_s00,652,SYNC_ROW_ALIGNED,18.4,-0.5,-0.496,0.496,False,0.496,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,-0.3788,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw11,V-Vw11,S-Vw11_s00,4909,SYNC_ROW_ALIGNED,-1.6,1.5,1.504,-1.504,True,-1.6,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6065,high,True,,False
+S-Vw12,V-Vw12,S-Vw12_s00,918,SYNC_ROW_ALIGNED,-50.7,4.0,4.005,-4.005,False,-4.005,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.368,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw13,V-Vw13,S-Vw13_s00,284,SYNC_ROW_ALIGNED,,,,,,,,none,,unusable,False,session too short to estimate lag (<300 rows),False
+S-Vw14a,V-Vw14a,S-Vw14a_s00,3138,SYNC_ROW_ALIGNED,-22.9,4.88,4.884,-4.884,False,-4.884,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.2951,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw14b,V-Vw14b,S-Vw14b_s00,19588,SYNC_ROW_ALIGNED,18.7,3.88,3.884,-3.884,False,,none,abs_gyro_mag_vs_abs_yawrate,0.1606,unusable,False,no usable correlation (|r|=0.16),False
+S-Vw14c,V-Vw14c,S-Vw14c_s00,15826,SYNC_ROW_ALIGNED,-2.2,1.98,1.984,-1.984,True,-1.984,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4259,medium,True,,False
+S-Vw15,V-Vw15,S-Vw15_s00,1380,SYNC_CLAIMED_NOT_TRIMMED,,3.04,,,,,,none,,unusable,False,no vehicle motion in session; lag unidentifiable,False
+S-Vw16a,V-Vw16a,S-Vw16a_s00,5879,SYNC_ROW_ALIGNED,10.0,-10.2,-10.197,10.197,True,10.197,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.2447,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw16b,V-Vw16b,S-Vw16b_s00,1126,SYNC_ROW_ALIGNED,-23.3,-0.2,-0.197,0.197,False,0.197,wallclock_preferred_xcorr_weak,abs_gyro_mag_vs_abs_yawrate,0.3807,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw17,V-Vw17,S-Vw17_s00,329,SYNC_ROW_ALIGNED,-2.3,1.6,1.603,-1.603,True,-1.603,wallclock_confirmed_by_weak_xcorr,gyro_x_vs_yawrate,-0.4525,medium,True,,False
+S-Vw2,V-Vw2,S-Vw2_s00,52712,SYNC_ROW_ALIGNED,-2.2,1.88,1.885,-1.885,True,-1.885,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4726,medium,True,,False
+S-Vw3,V-Vw3,S-Vw3_s00,3861,SYNC_ROW_ALIGNED,-0.4,-0.02,-0.015,0.015,True,-0.4,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6179,high,True,,False
+S-Vw4,V-Vw4,S-Vw4_s00,126526,SYNC_ROW_ALIGNED,-0.6,0.3,0.304,-0.304,True,-0.304,wallclock_confirmed_by_weak_xcorr,gyro_y_vs_yawrate,0.4801,medium,True,,False
+S-Vw5,V-Vw5,S-Vw5_s00,1012,SYNC_ROW_ALIGNED,-3.1,2.8,2.804,-2.804,True,-3.1,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.8055,high,True,,False
+S-Vw6,V-Vw6,S-Vw6_s00,1281,SYNC_ROW_ALIGNED,1.0,-1.3,-1.296,1.296,True,1.0,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6892,high,True,,False
+S-Vw7,V-Vw7,S-Vw7_s00,1602,SYNC_ROW_ALIGNED,4.6,-167.8,-167.796,167.796,False,167.796,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.2898,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw8,V-Vw8,S-Vw8_s00,1529,SYNC_ROW_ALIGNED,-3.4,-161.0,-160.996,160.996,False,160.996,wallclock_preferred_xcorr_weak,gyro_y_vs_yawrate,0.3644,low,False,"weak correlation; xcorr peak not trusted, wall clock used",False
+S-Vw9,V-Vw9,S-Vw9_s00,552,SYNC_ROW_ALIGNED,-0.7,0.5,0.504,-0.504,True,-0.7,xcorr+wallclock_agree,gyro_y_vs_yawrate,0.6635,high,True,,False
+S-Y1,V-Y1,S-Y1_s00,302,SYNC_ROW_ALIGNED,,3605.8,,,,,,none,,unusable,False,no vehicle motion in session; lag unidentifiable,True
+S-Y1,V-Y1,S-Y1_s01,36,SYNC_ROW_ALIGNED,,,,,,,,none,,unusable,False,session too short to estimate lag (<300 rows),False
+S-Y1,V-Y1,S-Y1_s02,3037,SYNC_ROW_ALIGNED,,3720.05,,,,,,none,,unusable,False,no vehicle motion in session; lag unidentifiable,False
+S-Y1,V-Y1,S-Y1_s03,66910,SYNC_ROW_ALIGNED,-4.0,3714.93,114.927,-114.927,False,,none,abs_gyro_mag_vs_abs_yawrate,0.1264,unusable,False,no usable correlation (|r|=0.13),True

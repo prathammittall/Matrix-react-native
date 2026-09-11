@@ -1,0 +1,20 @@
+{
+  "decision": "KEEP the 6-feature model (A_imu6)",
+  "decided_on": "validation only",
+  "date_frozen": "before any test-set access",
+  "rationale": [
+    "The 11-feature set improves regression metrics marginally (val nRMSE 0.48270 vs 0.48795; R2_dv 0.4120 vs 0.3848) and even improves fused velocity RMSE at 30 s and beyond.",
+    "But it DEGRADES fused dead-reckoning final position error at 14 of 15 feature-set x horizon comparisons on validation (up to +46% at 300 s).",
+    "Cause: per-session yaw bias grows with the extra channels, raising heading error by 13-83%, which dominates position error at long horizons.",
+    "Per the experiment rules: regression gains that do not translate into trajectory improvement do not justify a feature change."
+  ],
+  "frozen_configuration": {
+    "feature_set": "A_imu6",
+    "features": ["acc_x", "acc_y", "acc_z", "gyro_x", "gyro_y", "gyro_z"],
+    "target": "dv k=5 + yaw_rate",
+    "loss": "huber",
+    "fusion": {"method": "complementary_filter", "tau_seconds": 20.0, "k": 5, "dt": 0.1}
+  },
+  "test_run_purpose": "confirm the 6-vs-11 comparison once; the decision does not depend on it",
+  "test_used_for_selection": false
+}

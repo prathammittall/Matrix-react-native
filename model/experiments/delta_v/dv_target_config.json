@@ -1,0 +1,10 @@
+{
+  "horizons": [
+    1,
+    5,
+    10
+  ],
+  "dt": 0.1,
+  "max_acceleration_ms2": 15.0,
+  "rationale": "VBOX GPS velocity dropouts create impossible dv; p99.9 of observed |acc| is 7.9 m/s^2 and a road car cannot exceed ~1.2 g"
+}

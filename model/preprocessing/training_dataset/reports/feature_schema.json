@@ -1,0 +1,155 @@
+{
+  "baseline_feature_set": "A",
+  "baseline_features": [
+    "acc_x",
+    "acc_y",
+    "acc_z",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z"
+  ],
+  "window_samples": 50,
+  "window_seconds": 5.0,
+  "sampling_rate_hz": 10.0,
+  "causal": true,
+  "target_position": "last sample of the window",
+  "targets": [
+    "target_v_forward",
+    "target_yaw_rate"
+  ],
+  "excluded_as_input": [
+    "gps_latitude",
+    "gps_longitude",
+    "gps_speed_kmh",
+    "gps_bearing_deg",
+    "gps_accuracy_m",
+    "gps_satellites_used",
+    "gps_satellites_visible"
+  ],
+  "excluded_as_target": [
+    "target_v_lateral"
+  ],
+  "stored_arrays": {
+    "X_*.npy": "(N, 50, 6) float32 - feature set A, RAW (unscaled)",
+    "X_ext_*.npy": "(N, 50, 11) float32 - superset for ablation, RAW",
+    "y_*.npy": "(N, 2) float32 - ['target_v_forward', 'target_yaw_rate']"
+  },
+  "ext_channel_order": [
+    "acc_x",
+    "acc_y",
+    "acc_z",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "linear_acc_x",
+    "linear_acc_y",
+    "linear_acc_z",
+    "acc_mag",
+    "gyro_mag"
+  ],
+  "feature_sets": {
+    "A": {
+      "channels": [
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z"
+      ],
+      "ext_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "acc XYZ + gyro XYZ (baseline)"
+    },
+    "B": {
+      "channels": [
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z",
+        "linear_acc_x",
+        "linear_acc_y",
+        "linear_acc_z"
+      ],
+      "ext_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "description": "A + gravity-removed linear acceleration"
+    },
+    "C": {
+      "channels": [
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z",
+        "acc_mag",
+        "gyro_mag"
+      ],
+      "ext_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        9,
+        10
+      ],
+      "description": "A + rotation-invariant magnitudes"
+    },
+    "D": {
+      "channels": [
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z",
+        "linear_acc_x",
+        "linear_acc_y",
+        "linear_acc_z",
+        "acc_mag",
+        "gyro_mag"
+      ],
+      "ext_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "description": "A + linear_acc + magnitudes (all channels)"
+    }
+  },
+  "preprocessing_applied": {
+    "gravity_subtraction": "already applied upstream; NOT reapplied",
+    "accelerometer_bias": "applied here, per session, 27/45 sessions have estimates",
+    "gyroscope_bias": "applied here, per session, 27/45 sessions have estimates",
+    "coordinate_rotation": "NOT applied (low confidence)",
+    "normalisation": "NOT baked in; scaler fitted on train only, stored separately"
+  }
+}

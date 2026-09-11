@@ -1,0 +1,89 @@
+# ============================================================================
+# MATRIX — .gitignore
+#
+# Policy: commit CODE, CONFIG, CHECKPOINTS and RESULTS. Ignore RAW and DERIVED
+# DATA, which is large and regenerable by the pass1..pass12 pipeline.
+#
+# This keeps the repo at roughly 20 MB instead of 605 MB and avoids GitHub's
+# 50 MB per-file warning / 100 MB hard limit.
+#
+# KEPT deliberately (small but essential):
+#   *.pt checkpoints (14 files, ~8 MB)      the actual frozen models
+#   scaler.json / scaler.npz                train-only normalisation statistics
+#   split_manifest.csv, metadata/*.parquet  which session is in which split
+#   feature_schema.json, *.yaml, *.json     frozen configuration records
+#   all reports, metrics and result CSVs
+#
+# See model/RUN.md Section 16 for how to regenerate everything ignored here.
+# ============================================================================
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- OS / editor -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# ============================================================================
+# RAW DATASET — 2.1 GB. Obtain IO-VNBD separately, see model/RUN.md.
+# ============================================================================
+model/dataset/
+
+# ============================================================================
+# DERIVED DATA — regenerable, ~577 MB. Do not commit.
+# ============================================================================
+
+# ML training arrays (X_ext_train.npy alone is 107 MB, X_train.npy 58 MB).
+# Regenerate: model/preprocessing/pass12_build_training.py
+# NOTE: scaler.npz is .npz, not .npy, so it is NOT matched by this rule.
+*.npy
+
+# Per-session canonical parquet. Regenerate: pass8_build.py
+model/preprocessing/smartphone_core/
+model/preprocessing/smartphone_enhanced/
+model/preprocessing/vehicle_reference/
+
+# Per-session targets. Regenerate: pass11_targets.py
+model/preprocessing/targets/
+
+# Stationary calibration parquet — but KEEP sensor_bias_estimates.csv,
+# which inference needs for per-session bias correction.
+model/preprocessing/calibration/*.parquet
+
+# Dense stride-1 predictions. Regenerate: complementary_fusion/generate_dense.py
+model/experiments/complementary_fusion/predictions/dense/
+model/experiments/delta_v/predictions/dense_*.parquet
+model/experiments/delta_v/targets/*.parquet
+
+# Intermediate scan artefacts (pass1/pass2) — large JSON, regenerable.
+# pass1_files.json is also the raw-integrity manifest; drop the ignore line
+# below if you want to keep that check available on a fresh clone.
+model/preprocessing/outputs/pass2_fp.json
+
+# Scratch / ad-hoc analysis leftovers
+model/preprocessing/outputs/_*.csv
+
+# ============================================================================
+# Node / Expo (mobile app) — mobile/.gitignore also covers these
+# ============================================================================
+node_modules/
+.expo/
+dist/
+web-build/
+
+# ============================================================================
+# Logs
+# ============================================================================
+*.log
+train.log

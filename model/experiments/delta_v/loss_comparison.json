@@ -1,0 +1,41 @@
+{
+  "runs": [
+    {
+      "k": 5,
+      "loss_fn": "mse",
+      "best_epoch": 16,
+      "epochs_run": 28,
+      "best_val_loss": 0.315499,
+      "best_val_nrmse": 0.499269,
+      "val_r2_dv": 0.35011,
+      "val_r2_yaw": 0.90789,
+      "n_params": 150914
+    },
+    {
+      "k": 5,
+      "loss_fn": "mae",
+      "best_epoch": 35,
+      "epochs_run": 47,
+      "best_val_loss": 0.327914,
+      "best_val_nrmse": 0.489021,
+      "val_r2_dv": 0.38395,
+      "val_r2_yaw": 0.9083,
+      "n_params": 150914
+    },
+    {
+      "k": 5,
+      "loss_fn": "huber",
+      "best_epoch": 16,
+      "epochs_run": 28,
+      "best_val_loss": 0.126347,
+      "best_val_nrmse": 0.487947,
+      "val_r2_dv": 0.38479,
+      "val_r2_yaw": 0.90954,
+      "n_params": 150914
+    }
+  ],
+  "selected_loss": "huber",
+  "k": 5,
+  "selection_metric": "validation mean normalised RMSE",
+  "test_used_for_selection": false
+}

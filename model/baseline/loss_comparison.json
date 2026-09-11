@@ -1,0 +1,29 @@
+{
+  "mse": {
+    "best_epoch": 6,
+    "best_val_loss": 0.24496,
+    "best_val_nrmse": 0.453844,
+    "epochs_run": 18,
+    "n_params": 150914,
+    "minutes": 1.11
+  },
+  "mae": {
+    "best_epoch": 14,
+    "best_val_loss": 0.31369,
+    "best_val_nrmse": 0.461298,
+    "epochs_run": 26,
+    "n_params": 150914,
+    "minutes": 1.5
+  },
+  "huber": {
+    "best_epoch": 13,
+    "best_val_loss": 0.11397,
+    "best_val_nrmse": 0.449079,
+    "epochs_run": 25,
+    "n_params": 150914,
+    "minutes": 1.71
+  },
+  "selected": "huber",
+  "selection_metric": "mean normalised RMSE on the VALIDATION split (loss-independent, so the three losses are comparable)",
+  "test_used_for_selection": false
+}

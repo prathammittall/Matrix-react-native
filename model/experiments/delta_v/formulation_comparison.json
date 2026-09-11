@@ -1,0 +1,35 @@
+[
+  {
+    "k": 1,
+    "loss_fn": "huber",
+    "best_epoch": 9,
+    "epochs_run": 21,
+    "best_val_loss": 0.21034,
+    "best_val_nrmse": 0.638665,
+    "val_r2_dv": 0.08292,
+    "val_r2_yaw": 0.91434,
+    "n_params": 150914
+  },
+  {
+    "k": 5,
+    "loss_fn": "huber",
+    "best_epoch": 16,
+    "epochs_run": 28,
+    "best_val_loss": 0.126347,
+    "best_val_nrmse": 0.487947,
+    "val_r2_dv": 0.38479,
+    "val_r2_yaw": 0.90954,
+    "n_params": 150914
+  },
+  {
+    "k": 10,
+    "loss_fn": "huber",
+    "best_epoch": 20,
+    "epochs_run": 32,
+    "best_val_loss": 0.118592,
+    "best_val_nrmse": 0.481306,
+    "val_r2_dv": 0.41596,
+    "val_r2_yaw": 0.91061,
+    "n_params": 150914
+  }
+]

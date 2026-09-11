@@ -1,0 +1,47 @@
+# MATRIX delta-v experiment — frozen configuration
+experiment:
+  name: delta_v
+  question: >
+    Is the baseline's dead-reckoning error caused by the velocity TARGET FORMULATION
+    rather than by architecture or features?
+  changed_vs_baseline: [target for output 1 only]
+  unchanged_vs_baseline:
+    - split (identical session manifest)
+    - input X (N, 50, 6): acc_xyz + gyro_xyz, bias-corrected
+    - architecture Conv1D -> Conv1D -> GRU -> Dense -> 2  (150,914 params)
+    - seed 1337, deterministic, Adam, ReduceLROnPlateau, early stopping, checkpointing
+    - output 2 = yaw_rate (kept to detect cross-task effects)
+
+target:
+  output_1: dv_k = v[t] - v[t-k]
+  output_2: yaw_rate
+  horizons_investigated: {A: 1 (0.1 s), B: 5 (0.5 s), C: 10 (1.0 s)}
+  selected_horizon: 5
+  validity:
+    both_endpoints_high_confidence_vbox: true
+    contiguous_in_time: true
+    max_abs_acceleration_ms2: 15.0
+    rationale: >
+      VBOX GPS velocity drops to 0 for a single sample and recovers 11 times in 313,585
+      steps. Unfiltered these become +-26 m/s targets. p99.9 of observed |acc| is
+      7.9 m/s^2 and a road car cannot exceed ~1.2 g, so 15 m/s^2 (1.53 g) removes only
+      0.017% of samples and keeps every genuine hard brake.
+  windows_dropped: {train: 8, validation: 0, test: 0}
+
+training:
+  loss_compared: [mse, mae, huber]
+  selected_loss: huber
+  selection_metric: validation mean normalised RMSE
+  target_scaler: refitted on TRAIN only (baseline scaler is for absolute v)
+  test_used_for_selection: false
+
+velocity_reconstruction:
+  anchor: ground-truth VBOX velocity at the start of each simulated outage
+  methods_tested: [accel, stride]
+  selected: stride            # v[t] = v[t-k] + dv[t] on a stride-k lattice, interpolated
+  clipping:
+    tested: true
+    bounds_source: train distribution p0.1 / p99.9
+    applied: false
+    reason: zero effect at k=5 (identical median, p90 and max) so it is unjustified
+  non_negativity: velocity floored at 0 (a forward speed cannot be negative)

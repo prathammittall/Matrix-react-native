@@ -1,0 +1,50 @@
+[
+  {
+    "feature_set": "A_imu6",
+    "n_features": 6,
+    "loss_fn": "huber",
+    "best_epoch": 16,
+    "epochs_run": 28,
+    "best_val_loss": 0.126347,
+    "best_val_nrmse": 0.487947,
+    "val_r2_dv": 0.38479,
+    "val_r2_yaw": 0.90954,
+    "n_params": 150914
+  },
+  {
+    "feature_set": "B_imu_linacc",
+    "n_features": 9,
+    "loss_fn": "huber",
+    "best_epoch": 18,
+    "epochs_run": 30,
+    "best_val_loss": 0.12456,
+    "best_val_nrmse": 0.488567,
+    "val_r2_dv": 0.40796,
+    "val_r2_yaw": 0.89768,
+    "n_params": 151874
+  },
+  {
+    "feature_set": "C_imu_mag",
+    "n_features": 8,
+    "loss_fn": "huber",
+    "best_epoch": 17,
+    "epochs_run": 29,
+    "best_val_loss": 0.12843,
+    "best_val_nrmse": 0.50276,
+    "val_r2_dv": 0.33935,
+    "val_r2_yaw": 0.90732,
+    "n_params": 151554
+  },
+  {
+    "feature_set": "D_all11",
+    "n_features": 11,
+    "loss_fn": "huber",
+    "best_epoch": 18,
+    "epochs_run": 30,
+    "best_val_loss": 0.122138,
+    "best_val_nrmse": 0.482698,
+    "val_r2_dv": 0.41201,
+    "val_r2_yaw": 0.90498,
+    "n_params": 152514
+  }
+]

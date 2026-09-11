@@ -1,0 +1,44 @@
+# MATRIX Experiment E - complementary velocity fusion. Frozen record.
+experiment:
+  name: complementary_fusion
+  question: >
+    Do the absolute-v and delta-v velocity estimates have complementary error structures,
+    and does fusing them improve dead reckoning across ALL outage horizons?
+  models_reused_frozen:
+    absolute_v: model/baseline/checkpoints/best_huber.pt          # not retrained
+    delta_v:    model/experiments/delta_v/checkpoints/best_k5_huber.pt   # not retrained
+  nothing_retrained: true
+  dataset_unchanged: true
+  features: 6 core IMU (unchanged)
+  architecture: unchanged
+  medium_confidence_data: not used
+
+fair_comparison_rules:
+  anchor: ground-truth VBOX velocity at the start of every simulated outage, identical
+          for absolute-v, delta-v and fused
+  yaw: single common predicted yaw series (delta-v head) for every velocity estimator in
+       the controlled comparison, so differences are attributable to velocity alone
+  as_frozen_variants_also_reported: true
+
+fusion_methods_tested:
+  fixed_weight:
+    form: v = alpha * v_delta + (1 - alpha) * v_abs_anchored
+    alpha_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  complementary_filter:
+    form: v[t] = (1 - dt/tau) * (v[t-1] + dv[t]/k) + (dt/tau) * v_abs_anchored[t]
+    tau_grid_s: [1, 2, 5, 10, 20, 30, 60, 120, 300, 1000]
+    interpretation: delta-v drives short-term dynamics; absolute-v is the low-frequency anchor
+
+selection:
+  data: VALIDATION only (5 sessions, drivers A and E)
+  rule: mean rank of median final position error across 10/30/60/120/300 s
+  rule_declared_before_running: true
+  selected: cf_tau20
+  frozen_parameters: {method: complementary_filter, tau_seconds: 20.0, k: 5, dt: 0.1}
+  test_used_for_selection: false
+
+constraints_respected:
+  no_clipping_or_correction_factors: true
+  velocity_floored_at_zero: true   # a forward speed cannot be negative
+  baseline_untouched: true
+  delta_v_experiment_untouched: true
