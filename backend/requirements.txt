@@ -1,0 +1,8 @@
+# MATRIX inference service — additive dependencies ONLY.
+# The frozen ML stack (torch / numpy / pandas / scipy / pyarrow) is pinned in the
+# project-root requirements.txt and is NOT re-pinned here, so installing this file
+# cannot move a version the frozen models depend on.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pytest==8.3.4

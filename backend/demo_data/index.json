@@ -1,0 +1,41 @@
+{
+  "sessions": [
+    {
+      "id": "S-M_s00",
+      "title": "Coventry urban loop",
+      "driver_id": "B",
+      "split": "test",
+      "duration_s": 4417.6,
+      "distance_km": 37.11,
+      "outage_count": 13,
+      "outage_durations": [
+        10,
+        30,
+        60,
+        120,
+        300
+      ],
+      "vehicle": "Ford Fiesta Titanium",
+      "phone": "Huawei P20 Pro"
+    },
+    {
+      "id": "S-M_s01",
+      "title": "Coventry return leg",
+      "driver_id": "B",
+      "split": "test",
+      "duration_s": 6171.1,
+      "distance_km": 64.87,
+      "outage_count": 13,
+      "outage_durations": [
+        10,
+        30,
+        60,
+        120,
+        300
+      ],
+      "vehicle": "Ford Fiesta Titanium",
+      "phone": "Huawei P20 Pro"
+    }
+  ],
+  "note": "Real recorded drives with stored frozen-model predictions."
+}

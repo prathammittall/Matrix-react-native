@@ -1,0 +1,38 @@
+diff --git a/node_modules/onnxruntime-react-native/android/build.gradle b/node_modules/onnxruntime-react-native/android/build.gradle
+index 41b4359..918557b 100644
+--- a/node_modules/onnxruntime-react-native/android/build.gradle
++++ b/node_modules/onnxruntime-react-native/android/build.gradle
+@@ -247,7 +247,14 @@ dependencies {
+     extractLibs "com.microsoft.onnxruntime:onnxruntime-android:latest.integration@aar"
+   }
+ 
+-  if (VersionNumber.parse(REACT_NATIVE_VERSION) < VersionNumber.parse("0.71")) {
++  // Gradle 9 removed org.gradle.util.VersionNumber, which this check used.
++  // The branch only applies to React Native < 0.71 (fbjni was vendored
++  // separately back then); this project is on 0.86, so compare the major/minor
++  // numerically instead of reaching for the deleted class.
++  def rnParts = REACT_NATIVE_VERSION.tokenize('.')
++  def rnMajor = rnParts[0].toInteger()
++  def rnMinor = rnParts.size() > 1 ? rnParts[1].replaceAll(/[^0-9].*/, '').toInteger() : 0
++  if (rnMajor == 0 && rnMinor < 71) {
+     extractLibs "com.facebook.fbjni:fbjni:+:headers"
+     extractLibs "com.facebook.fbjni:fbjni:+"
+   }
+diff --git a/node_modules/onnxruntime-react-native/android/src/main/java/ai/onnxruntime/reactnative/OnnxruntimeModule.java b/node_modules/onnxruntime-react-native/android/src/main/java/ai/onnxruntime/reactnative/OnnxruntimeModule.java
+index c362e6a..89db8ca 100644
+--- a/node_modules/onnxruntime-react-native/android/src/main/java/ai/onnxruntime/reactnative/OnnxruntimeModule.java
++++ b/node_modules/onnxruntime-react-native/android/src/main/java/ai/onnxruntime/reactnative/OnnxruntimeModule.java
+@@ -47,8 +47,12 @@ public class OnnxruntimeModule extends ReactContextBaseJavaModule {
+     try {
+       System.loadLibrary("onnxruntimejsi");
+       JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
++      // getCatalystInstance() is a bridge-only API and throws under the New
++      // Architecture (bridgeless), which is what React Native 0.86 / Expo 57
++      // run. ReactContext.getJSCallInvokerHolder() is implemented by both the
++      // bridge and bridgeless contexts, so it works either way.
+       CallInvokerHolderImpl jsCallInvokerHolder =
+-        (CallInvokerHolderImpl) getReactApplicationContext().getCatalystInstance().getJSCallInvokerHolder();
++        (CallInvokerHolderImpl) getReactApplicationContext().getJSCallInvokerHolder();
+       nativeInstall(jsContext.get(), jsCallInvokerHolder);
+       return true;
+     } catch (Exception e) {
