@@ -6,6 +6,7 @@ import { Screen, ScreenHeader } from '@/components/screen';
 import {
   Button,
   Card,
+  Disclosure,
   IconChevronRight,
   ListRow,
   Section,
@@ -24,6 +25,10 @@ import { Radius, Spacing, useColors } from '@/theme';
  * (architecture, weights, scaler, feature order, Δv horizon, τ) are shown as
  * read-only facts and are deliberately not editable — changing any of them would
  * invalidate the model's measured accuracy.
+ *
+ * Ordering is by how often a setting is touched, not by how interesting it is.
+ * Appearance, units and map come first; where the model runs and which host it
+ * talks to are one tap down, because a normal drive never needs them.
  */
 export default function SettingsScreen() {
   const c = useColors();
@@ -33,6 +38,23 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <ScreenHeader title="Settings" />
+
+      <Section title="Appearance">
+        <SegmentedControl
+          label="Theme"
+          value={settings.theme}
+          onChange={(v) => update('theme', v)}
+          options={[
+            { value: 'dark', label: 'Black' },
+            { value: 'light', label: 'White' },
+            { value: 'system', label: 'System' },
+          ]}
+        />
+        <Txt variant="caption" color="textTertiary">
+          Black is the default: the app lives on a windscreen mount, often at night, and a white
+          screen there is a mirror. Status colour means the same thing in both themes.
+        </Txt>
+      </Section>
 
       <Section title="Units">
         <SegmentedControl
@@ -110,7 +132,8 @@ export default function SettingsScreen() {
         </Card>
       </Section>
 
-      <Section title="AI inference">
+      <Section title="Advanced">
+        <Disclosure title="AI inference" subtitle="Where the frozen model runs">
         <SegmentedControl
           label="Where the model runs"
           value={settings.inferenceMode}
@@ -132,9 +155,9 @@ export default function SettingsScreen() {
           Both paths run the same frozen weights, the same scaler and the same τ = {FROZEN.TAU_S} s
           filter, so they produce the same track. Changing this takes effect on the next drive.
         </Txt>
-      </Section>
+        </Disclosure>
 
-      <Section title="Inference service">
+        <Disclosure title="Inference service" subtitle="Only used in Server or Auto mode">
         <Card style={{ gap: Spacing.md }}>
           <View style={{ gap: Spacing.sm }}>
             <Txt variant="label" color="textSecondary">
@@ -174,9 +197,9 @@ export default function SettingsScreen() {
             }}
           />
         </Card>
-      </Section>
+        </Disclosure>
 
-      <Section title="Model">
+        <Disclosure title="Frozen model" subtitle="Read-only — fixed by training">
         <Card padded={false}>
           <ListRow first title="Model" subtitle="MATRIX DR — frozen" right={<Txt variant="caption" color="textTertiary">read-only</Txt>} />
           <ListRow title="Input window" subtitle={`${FROZEN.WINDOW_SAMPLES} samples at ${FROZEN.SAMPLE_RATE_HZ} Hz`} />
@@ -188,6 +211,7 @@ export default function SettingsScreen() {
           These values are fixed by the trained model and cannot be changed from the app. Editing
           any of them would invalidate the measured accuracy.
         </Txt>
+        </Disclosure>
       </Section>
 
       <Section title="More">

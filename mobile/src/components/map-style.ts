@@ -91,14 +91,23 @@ export function buildMapStyle(
         id: 'basemap',
         type: 'raster',
         source: 'basemap',
+        // Fully desaturated in both schemes. The basemap is context, not
+        // content: the only saturated pixels on screen should be the two
+        // trajectories and the vehicle, so the GNSS -> AI handover reads
+        // instantly. A full-colour OSM raster competes with them.
         paint: dark
           ? {
-              'raster-brightness-max': 0.62,
-              'raster-saturation': -0.75,
-              'raster-contrast': 0.1,
-              'raster-opacity': 0.85,
+              'raster-brightness-max': 0.55,
+              'raster-saturation': -1,
+              'raster-contrast': 0.15,
+              'raster-opacity': 0.8,
             }
-          : { 'raster-opacity': 1 },
+          : {
+              'raster-saturation': -1,
+              'raster-brightness-min': 0.18,
+              'raster-contrast': -0.05,
+              'raster-opacity': 0.9,
+            },
       },
     ],
   };
