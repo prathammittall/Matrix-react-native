@@ -20,27 +20,61 @@ export interface ClassifyInput {
   age: number;
   /** false when the OS reports location services off or permission denied */
   available: boolean;
+  /** what the receiver was classified as a moment ago, so the thresholds for
+   *  leaving a state can be stricter than the thresholds for entering it */
+  previous?: GnssState;
+  /** true before any fix has ever arrived in this session — "still acquiring"
+   *  is not the same event as "the signal was lost" and must not be reported
+   *  to the driver as one */
+  acquiring?: boolean;
 }
 
-export function classifyGnss({ fix, age, available }: ClassifyInput): {
-  state: GnssState;
-  reason: string;
-} {
+/**
+ * Classify the receiver, with hysteresis.
+ *
+ * Every accuracy threshold has an enter value and a lower clear value. Without
+ * that, a receiver reporting 24, 26, 24, 27 m — completely normal in town —
+ * walks the app across the WEAK boundary four times in four seconds, and each
+ * crossing is a visible state change. With it, the state changes only when the
+ * receiver has genuinely moved to a different quality regime.
+ */
+export function classifyGnss({
+  fix,
+  age,
+  available,
+  previous,
+  acquiring,
+}: ClassifyInput): { state: GnssState; reason: string } {
   if (!available) return { state: 'UNAVAILABLE', reason: 'Location services unavailable' };
-  if (!fix) return { state: 'OUTAGE', reason: 'No GNSS fix acquired yet' };
-  if (age >= TUNING.FIX_TIMEOUT_S) {
-    return { state: 'OUTAGE', reason: `No fix for ${age.toFixed(1)} s` };
+  if (!fix) {
+    // No fix YET is an acquisition state, not a loss. Reporting it as OUTAGE is
+    // what made the app announce "GNSS lost" seconds after Start, before the
+    // receiver had ever had a chance to report anything.
+    return acquiring
+      ? { state: 'ACQUIRING', reason: 'Acquiring satellites' }
+      : { state: 'OUTAGE', reason: 'No GNSS fix' };
   }
+
+  const wasOutage = previous === 'OUTAGE';
+  const wasWeak = previous === 'WEAK' || wasOutage;
+
+  if (age >= TUNING.FIX_TIMEOUT_S) {
+    return { state: 'OUTAGE', reason: `No fix for ${age.toFixed(0)} s` };
+  }
+
   const acc = fix.accuracy;
   if (acc === null) return { state: 'WEAK', reason: 'Fix reports no accuracy estimate' };
-  if (acc >= TUNING.ACCURACY_OUTAGE_M) {
+
+  const outageAt = wasOutage ? TUNING.ACCURACY_OUTAGE_CLEAR_M : TUNING.ACCURACY_OUTAGE_M;
+  if (acc >= outageAt) {
     return { state: 'OUTAGE', reason: `Accuracy degraded to ${acc.toFixed(0)} m` };
   }
-  if (acc >= TUNING.ACCURACY_WEAK_M) {
-    return { state: 'WEAK', reason: `Accuracy ${acc.toFixed(0)} m` };
-  }
+
+  const weakAt = wasWeak ? TUNING.ACCURACY_WEAK_CLEAR_M : TUNING.ACCURACY_WEAK_M;
+  if (acc >= weakAt) return { state: 'WEAK', reason: `Accuracy ${acc.toFixed(0)} m` };
+
   if (age >= TUNING.FIX_STALE_S) {
-    return { state: 'WEAK', reason: `Fix is ${age.toFixed(1)} s old` };
+    return { state: 'WEAK', reason: `Fix is ${age.toFixed(0)} s old` };
   }
   return { state: 'ACTIVE', reason: `Accuracy ${acc.toFixed(0)} m` };
 }
@@ -53,8 +87,12 @@ export class GnssService {
   private lastFixAt = 0;
   private available = true;
   private clockOrigin = Date.now();
-  /** consecutive readings in a bad/good state, for debouncing the mode switch */
   private simulatedOutage = false;
+  /** the previous classification, which feeds the hysteresis thresholds */
+  private lastState: GnssState = 'ACQUIRING';
+  /** false until the receiver has produced at least one fix this session */
+  private everFixed = false;
+  private heartbeat: ReturnType<typeof setInterval> | null = null;
 
   onStatus: ((s: GnssStatus) => void) | null = null;
 
@@ -78,6 +116,17 @@ export class GnssService {
   }
 
   async start(): Promise<PermissionOutcome> {
+    this.lastState = 'ACQUIRING';
+    this.everFixed = false;
+    this.lastFix = null;
+    this.lastFixAt = 0;
+    // Staleness is measured against the clock, so the classification has to be
+    // recomputed on the clock. Emitting only on fix arrival meant `age` was
+    // always ~0 in whatever the UI last saw, and a receiver that simply stopped
+    // reporting looked permanently healthy.
+    if (this.heartbeat) clearInterval(this.heartbeat);
+    this.heartbeat = setInterval(() => this.emit(), TUNING.HEARTBEAT_MS);
+
     const outcome = await GnssService.requestPermission();
     this.available = outcome === 'granted';
     if (!this.available) {
@@ -109,6 +158,7 @@ export class GnssService {
       t: (now - this.clockOrigin) / 1000,
     };
     this.lastFixAt = now;
+    this.everFixed = true;
     this.emit();
   }
 
@@ -138,7 +188,10 @@ export class GnssService {
       fix: this.lastFix,
       age: Number.isFinite(age) ? age : TUNING.FIX_TIMEOUT_S,
       available: this.available,
+      previous: this.lastState,
+      acquiring: !this.everFixed,
     });
+    this.lastState = state;
     return { state, fix: this.lastFix, age: Number.isFinite(age) ? age : 0, reason, satellites: null };
   }
 
@@ -149,6 +202,9 @@ export class GnssService {
   stop() {
     this.sub?.remove();
     this.sub = null;
+    if (this.heartbeat) clearInterval(this.heartbeat);
+    this.heartbeat = null;
+    this.simulatedOutage = false;
   }
 }
 

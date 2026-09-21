@@ -31,14 +31,22 @@ export function describeStatus(
   }
   if (mode === 'DEGRADED') {
     return {
-      label: 'POSITION UNAVAILABLE',
-      detail: 'GNSS lost and the AI service is unavailable',
+      label: 'POSITION HELD',
+      detail: 'GNSS lost — showing the last known position',
       tone: 'danger',
       ai: false,
     };
   }
   if (mode === 'IDLE') {
     return { label: 'STANDBY', detail: 'Navigation not started', tone: 'idle', ai: false };
+  }
+  if (mode === 'ACQUIRING' || gnss === 'ACQUIRING') {
+    return {
+      label: 'ACQUIRING GNSS',
+      detail: 'Waiting for the first satellite fix',
+      tone: 'idle',
+      ai: false,
+    };
   }
   if (gnss === 'ACTIVE') return { label: 'GNSS ACTIVE', detail: gnssReason, tone: 'ok', ai: false };
   if (gnss === 'WEAK') return { label: 'GNSS WEAK', detail: gnssReason, tone: 'warn', ai: false };

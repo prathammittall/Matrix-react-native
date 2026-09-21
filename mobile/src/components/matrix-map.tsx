@@ -45,7 +45,14 @@ export interface MatrixMapProps {
   tracks?: MapTrack[];
   markers?: MapMarkerSpec[];
   /** live vehicle position; drawn as a heading-aware puck */
-  vehicle?: { coordinate: LatLng; headingDeg: number | null; tone: string } | null;
+  vehicle?: {
+    coordinate: LatLng;
+    headingDeg: number | null;
+    tone: string;
+    /** the position is the last one known, not a current one — drawn hollow
+     *  so a held position can never be mistaken for a live fix */
+    stale?: boolean;
+  } | null;
   /** shaded disc showing GNSS horizontal accuracy */
   accuracyM?: number | null;
   initialRegion?: Region | null;
@@ -274,7 +281,16 @@ export const MatrixMap = forwardRef<MatrixMapHandle, MatrixMapProps>(function Ma
             accessibilityLabel="Vehicle"
             style={[styles.puckWrap, { transform: [{ rotate: `${vehicle.headingDeg ?? 0}deg` }] }]}>
             <View style={[styles.puckHalo, { backgroundColor: `${vehicle.tone}33` }]} />
-            <View style={[styles.puck, { backgroundColor: vehicle.tone, borderColor: c.surface }]} />
+            <View
+              style={[
+                styles.puck,
+                {
+                  backgroundColor: vehicle.stale ? 'transparent' : vehicle.tone,
+                  borderColor: vehicle.stale ? vehicle.tone : c.surface,
+                  borderWidth: vehicle.stale ? 3 : 2,
+                },
+              ]}
+            />
             <View style={[styles.puckNose, { borderBottomColor: vehicle.tone }]} />
           </View>
         </Marker>

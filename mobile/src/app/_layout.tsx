@@ -4,19 +4,19 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SettingsProvider } from '@/hooks/use-settings';
-import { Palette } from '@/theme';
+import { Palette, useColorSchemeResolved } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const scheme = useColorScheme();
-  const dark = scheme !== 'light';
-  const colors = dark ? Palette.dark : Palette.light;
+  // The user's stored preference wins over the OS; it defaults to dark.
+  const scheme = useColorSchemeResolved();
+  const dark = scheme === 'dark';
+  const colors = Palette[scheme];
 
   // `preventAutoHideAsync()` above holds the splash until the first render.
   // Without this matching hide the splash would stay up forever and the app

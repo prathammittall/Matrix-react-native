@@ -13,6 +13,7 @@ import { OutageBanner } from '@/components/outage-banner';
 import { SensorPanel } from '@/components/sensor-panel';
 import {
   Button,
+  Disclosure,
   IconCrosshair,
   IconLayers,
   IconButton,
@@ -118,7 +119,12 @@ export default function NavigateScreen() {
   }, []);
 
   const navigating = state.mode !== 'IDLE';
-  const outageSeconds = state.activeOutage ? state.activeOutage.durationS : null;
+  // Wall-clock, driven by the engine heartbeat. Reading `Date.now()` here
+  // instead froze both clocks whenever the engine stopped emitting — which is
+  // exactly what happens during an outage, the one time they matter.
+  const outageSeconds = state.activeOutage ? state.outageElapsedS : null;
+  const onAiSeconds =
+    state.outages.reduce((a, o) => a + o.durationS, 0) + state.outageElapsedS;
 
   const tracks = useMemo<MapTrack[]>(() => {
     const out: MapTrack[] = [];
@@ -153,8 +159,17 @@ export default function NavigateScreen() {
         onPanDrag={() => setFollowing(false)}
         accuracyM={state.mode === 'GNSS' ? (state.gnss.fix?.accuracy ?? null) : null}
         vehicle={
-          state.position && state.mode !== 'DEGRADED'
-            ? { coordinate: state.position, headingDeg: state.headingDeg, tone: vehicleTone }
+          // In DEGRADED there is no trustworthy position, but blanking the map
+          // is worse than an honest stale one: the driver loses all context at
+          // the exact moment they need it. Show the last position the app could
+          // justify, in the danger tone, with the banner naming it as held.
+          state.position ?? state.lastKnown
+            ? {
+                coordinate: (state.position ?? state.lastKnown)!,
+                headingDeg: state.headingDeg,
+                tone: vehicleTone,
+                stale: state.mode === 'DEGRADED',
+              }
             : null
         }
         markers={
@@ -191,7 +206,7 @@ export default function NavigateScreen() {
           <OutageBanner
             visible
             mode={state.mode}
-            seconds={state.activeOutage?.durationS ?? 0}
+            seconds={state.activeOutage ? state.outageElapsedS : state.heldS}
             distanceM={state.activeOutage?.drDistanceM ?? 0}
             units={settings.units}
           />
@@ -249,55 +264,69 @@ export default function NavigateScreen() {
             ) : null}
           </Row>
 
+          {/* Three numbers, always. A driver checking the screen at speed can
+              read three; they cannot read nine. Everything else is one tap
+              away and nothing is hidden — it is ranked. */}
           <MetricsCard
             columns={3}
             small
             metrics={[
               { label: 'Distance', value: formatDistance(state.distanceM, settings.units) },
-              {
-                label: 'Elapsed',
-                value: state.startedAt ? formatDuration((Date.now() - state.startedAt) / 1000) : '—',
-              },
+              { label: 'Elapsed', value: navigating ? formatDuration(state.elapsedS) : '—' },
               { label: 'Speed', value: formatSpeed(state.speedMps, settings.units) },
-              { label: 'Outages', value: String(state.outages.length) },
-              {
-                label: 'On AI',
-                value: formatDuration(
-                  state.outages.reduce((a, o) => a + o.durationS, 0) +
-                    (state.activeOutage?.durationS ?? 0),
-                ),
-                tone: state.mode === 'DEAD_RECKONING' ? 'ai' : undefined,
-              },
-              { label: 'Windows', value: String(state.serviceState?.windows_inferred ?? 0) },
             ]}
           />
 
-          <AIStatusCard
-            state={state.inference}
-            error={state.inferenceError}
-            telemetry={state.telemetry}
-            model={model}
-            latencyMs={state.lastInferenceMs}
-            windowFill={state.windowFill}
-            windowRequired={state.windowRequired}
-            showTechnical={settings.technicalDetails}
-            backend={state.backend}
-            backendLabel={state.backendLabel}
-            offlineCapable={state.offlineCapable}
-            fallbackReason={state.backendFallbackReason}
-          />
+          <Disclosure
+            title="Drive detail"
+            subtitle={`${state.outages.length} outage${state.outages.length === 1 ? '' : 's'} · ${formatDuration(onAiSeconds)} on AI`}>
+            <MetricsCard
+              columns={3}
+              small
+              metrics={[
+                { label: 'Outages', value: String(state.outages.length) },
+                {
+                  label: 'On AI',
+                  value: formatDuration(onAiSeconds),
+                  tone: state.mode === 'DEAD_RECKONING' ? 'ai' : undefined,
+                },
+                { label: 'Windows', value: String(state.serviceState?.windows_inferred ?? 0) },
+              ]}
+            />
+          </Disclosure>
 
-          <SensorPanel
-            gnss={state.gnss}
-            telemetry={state.telemetry}
-            velocityMps={state.speedMps}
-            headingDeg={state.headingDeg}
-          />
+          <Disclosure
+            title="AI engine"
+            subtitle={state.backendLabel ?? 'Frozen MATRIX model'}
+            initiallyOpen={state.mode === 'DEAD_RECKONING' || state.mode === 'DEGRADED'}>
+            <AIStatusCard
+              state={state.inference}
+              error={state.inferenceError}
+              telemetry={state.telemetry}
+              model={model}
+              latencyMs={state.lastInferenceMs}
+              windowFill={state.windowFill}
+              windowRequired={state.windowRequired}
+              showTechnical={settings.technicalDetails}
+              backend={state.backend}
+              backendLabel={state.backendLabel}
+              offlineCapable={state.offlineCapable}
+              fallbackReason={state.backendFallbackReason}
+            />
+          </Disclosure>
 
-          <Txt variant="micro" color="textTertiary" style={{ textAlign: 'center' }}>
-            Dead-reckoned positions come from the frozen MATRIX model on the inference service.
-            They are an estimate, not a measured fix.
-          </Txt>
+          <Disclosure title="Sensors" subtitle="GNSS receiver and live IMU channels">
+            <SensorPanel
+              gnss={state.gnss}
+              telemetry={state.telemetry}
+              velocityMps={state.speedMps}
+              headingDeg={state.headingDeg}
+            />
+            <Txt variant="micro" color="textTertiary">
+              Dead-reckoned positions come from the frozen MATRIX model running on this device.
+              They are an estimate, not a measured fix.
+            </Txt>
+          </Disclosure>
         </ScrollView>
       </BottomSheet>
     </View>

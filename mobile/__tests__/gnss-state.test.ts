@@ -19,8 +19,18 @@ describe('classifyGnss — GNSS sensor state transitions', () => {
     expect(classifyGnss({ fix: fix(), age: 0, available: false }).state).toBe('UNAVAILABLE');
   });
 
-  it('is OUTAGE before the first fix arrives', () => {
-    expect(classifyGnss({ fix: null, age: 0, available: true }).state).toBe('OUTAGE');
+  it('is ACQUIRING, not OUTAGE, before the first fix ever arrives', () => {
+    // "we have not found it yet" and "we lost it" are different events and the
+    // driver is told different things about them
+    const r = classifyGnss({ fix: null, age: 0, available: true, acquiring: true });
+    expect(r.state).toBe('ACQUIRING');
+    expect(r.reason).toMatch(/Acquiring/);
+  });
+
+  it('is OUTAGE when the fix disappears after one has been seen', () => {
+    expect(classifyGnss({ fix: null, age: 30, available: true, acquiring: false }).state).toBe(
+      'OUTAGE',
+    );
   });
 
   it('is ACTIVE for a fresh, accurate fix', () => {
@@ -56,9 +66,42 @@ describe('classifyGnss — GNSS sensor state transitions', () => {
     expect(classifyGnss({ fix: fix({ accuracy: null }), age: 0, available: true }).state).toBe('WEAK');
   });
 
+  it('does not call an ordinary urban fix an outage', () => {
+    // a phone falling back to cell/Wi-Fi positioning reports 50-100 m. That is
+    // a usable position, and calling it an outage is what produced "GNSS lost"
+    // out of nowhere on a clear road.
+    for (const accuracy of [35, 50, 80, 100]) {
+      expect(classifyGnss({ fix: fix({ accuracy }), age: 0, available: true }).state).not.toBe(
+        'OUTAGE',
+      );
+    }
+  });
+
+  it('applies hysteresis so a receiver on the boundary cannot oscillate', () => {
+    const onBoundary = TUNING.ACCURACY_WEAK_CLEAR_M + 1; // between clear and enter
+    // coming from ACTIVE this is still ACTIVE — it has not reached the enter value
+    expect(
+      classifyGnss({ fix: fix({ accuracy: onBoundary }), age: 0, available: true, previous: 'ACTIVE' })
+        .state,
+    ).toBe('ACTIVE');
+    // but having already gone WEAK, it stays WEAK until it clears the lower value
+    expect(
+      classifyGnss({ fix: fix({ accuracy: onBoundary }), age: 0, available: true, previous: 'WEAK' })
+        .state,
+    ).toBe('WEAK');
+  });
+
+  it('the enter and clear thresholds are ordered, or hysteresis is a no-op', () => {
+    expect(TUNING.ACCURACY_WEAK_CLEAR_M).toBeLessThan(TUNING.ACCURACY_WEAK_M);
+    expect(TUNING.ACCURACY_OUTAGE_CLEAR_M).toBeLessThan(TUNING.ACCURACY_OUTAGE_M);
+    expect(TUNING.ACCURACY_WEAK_M).toBeLessThan(TUNING.ACCURACY_OUTAGE_M);
+    expect(TUNING.FIX_STALE_S).toBeLessThan(TUNING.FIX_TIMEOUT_S);
+  });
+
   it('always explains itself', () => {
     for (const input of [
       { fix: null, age: 0, available: true },
+      { fix: null, age: 0, available: true, acquiring: true },
       { fix: fix(), age: 0, available: true },
       { fix: fix(), age: 99, available: true },
       { fix: fix(), age: 0, available: false },

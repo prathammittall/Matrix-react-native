@@ -59,15 +59,15 @@ export function OutageBanner({
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Txt variant="label" style={{ color: tone }}>
-          {ai ? 'GNSS LOST — AI DEAD RECKONING ACTIVE' : 'GNSS LOST — NO POSITION AVAILABLE'}
+          {ai ? 'GNSS LOST — AI DEAD RECKONING ACTIVE' : 'GNSS LOST — POSITION HELD'}
         </Txt>
         <Txt variant="caption" color="textSecondary">
           {ai
             ? `Position estimated from IMU for ${formatClock(seconds)} · ${formatDistance(distanceM, units)}`
-            : 'The AI service is unavailable, so no estimated position is shown.'}
+            : `Showing the last known position, ${formatClock(seconds)} ago. The AI could not take over.`}
         </Txt>
       </View>
-      {ai ? (
+      {ai || seconds > 0 ? (
         <Row gap={0} style={{ alignItems: 'flex-end', flexDirection: 'column' }}>
           <Txt variant="metricSm" tabular style={{ color: tone }}>
             {formatClock(seconds)}

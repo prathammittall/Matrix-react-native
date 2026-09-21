@@ -39,18 +39,44 @@ export const TUNING = {
   /** how often the UI re-reads high-rate buffers (sensor values are throttled,
    *  not rendered per sample) */
   UI_REFRESH_MS: 250,
-  /** GNSS is WEAK above this horizontal accuracy */
-  ACCURACY_WEAK_M: 25,
-  /** GNSS is treated as an OUTAGE above this horizontal accuracy */
-  ACCURACY_OUTAGE_M: 60,
-  /** a fix older than this is stale -> OUTAGE */
-  FIX_TIMEOUT_S: 5,
+  /** how often the engine re-evaluates GNSS health and republishes a snapshot.
+   *  GNSS staleness is a function of the CLOCK, not of fix arrivals: without a
+   *  heartbeat, "no fix for 6 s" can never be observed, because the only thing
+   *  that used to trigger a re-classification was a fix arriving. */
+  HEARTBEAT_MS: 500,
+
+  // --- GNSS health thresholds -------------------------------------------
+  // Two thresholds per transition, never one. A receiver sitting on a
+  // boundary would otherwise oscillate, and every oscillation is a mode flip
+  // the driver sees. Entering a worse state needs the worse number; leaving it
+  // needs the better one (hysteresis).
+  /** GNSS becomes WEAK above this horizontal accuracy... */
+  ACCURACY_WEAK_M: 30,
+  /** ...and is only ACTIVE again below this one */
+  ACCURACY_WEAK_CLEAR_M: 22,
+  /** GNSS is treated as an OUTAGE above this horizontal accuracy...
+   *  A phone that falls back to cell/Wi-Fi positioning reports 50-100 m, and a
+   *  first fix in a cold start is routinely 40-80 m. Both are still a usable
+   *  position. Only a genuinely uninformative fix is an outage. */
+  ACCURACY_OUTAGE_M: 150,
+  /** ...and stops being one below this */
+  ACCURACY_OUTAGE_CLEAR_M: 110,
+  /** a fix older than this is stale -> OUTAGE. Android's fused provider under
+   *  BestForNavigation delivers ~1 Hz but skips beats under load, so this has
+   *  to tolerate several missed beats before calling the receiver dead. */
+  FIX_TIMEOUT_S: 6,
   /** a fix older than this is ageing -> WEAK */
-  FIX_STALE_S: 2.5,
-  /** consecutive bad classifications before the mode actually switches
-   *  (debounce, so one dropped fix does not flip the whole UI) */
-  OUTAGE_CONFIRM_SAMPLES: 2,
-  RECOVERY_CONFIRM_SAMPLES: 2,
+  FIX_STALE_S: 3,
+
+  // --- mode confirmation (seconds, not samples) -------------------------
+  // Sample counts are meaningless when the callers tick at different rates:
+  // the old 2-sample debounce was satisfied by one GNSS fix plus one inference
+  // reply ~50 ms apart, so a single bad reading flipped the app into dead
+  // reckoning. Time is the honest unit for "has this really happened?".
+  /** GNSS must look lost continuously for this long before the AI takes over */
+  OUTAGE_CONFIRM_S: 3,
+  /** and must look healthy this long before GNSS is trusted again */
+  RECOVERY_CONFIRM_S: 1.5,
   /** network timeout for one inference call */
   REQUEST_TIMEOUT_MS: 8000,
   /** consecutive request failures before the service is declared OFFLINE */

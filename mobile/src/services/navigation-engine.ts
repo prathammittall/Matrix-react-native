@@ -5,15 +5,25 @@
  * It consumes the GNSS sensor layer and the ML inference layer and produces a
  * single NavigationMode plus the tracks the map draws.
  *
- *   GNSS ACTIVE/WEAK              -> GNSS
- *   GNSS OUTAGE + inference READY -> DEAD_RECKONING
- *   GNSS OUTAGE + inference down  -> DEGRADED   (no position claimed)
+ *   no fix yet                       -> ACQUIRING      (not an outage)
+ *   GNSS ACTIVE/WEAK                 -> GNSS
+ *   GNSS lost + anchor + inference   -> DEAD_RECKONING
+ *   GNSS lost, anything else missing -> DEGRADED       (last position held)
  *
  * It never computes a dead-reckoned position itself. Position during an outage
  * comes from an InferenceBackend running the frozen model - either on-device
  * (ONNX Runtime, works with no network) or the inference service. Both produce
- * the same numbers. If neither can answer, the mode is DEGRADED and the UI says
- * so rather than showing a position it cannot justify.
+ * the same numbers. If neither can answer, the mode is DEGRADED: the app holds
+ * the last position it could justify and labels it as held, rather than either
+ * claiming a fix it does not have or blanking the map.
+ *
+ * Two rules keep the mode honest, and both are about TIME:
+ *   1. every transition must hold continuously for a wall-clock interval
+ *      (`ConfirmationGate`) before it is adopted, so receiver noise cannot
+ *      flip the app into dead reckoning;
+ *   2. a heartbeat re-evaluates and republishes at `TUNING.HEARTBEAT_MS`, so
+ *      staleness is measured against the clock rather than against the arrival
+ *      of the next fix — which, during an outage, never comes.
  */
 import { TUNING } from './config';
 import { ApiError } from './api';
@@ -44,35 +54,69 @@ export interface ModeInput {
   inference: InferenceState;
   /** true once the rolling 50-sample window is full on the service */
   windowReady: boolean;
+  /** true when a previous GNSS fix exists to dead-reckon from */
+  hasAnchor: boolean;
 }
 
 /** The mode-selection rule, isolated so it can be tested exhaustively. */
-export function nextMode({ navigating, gnss, inference, windowReady }: ModeInput): NavigationMode {
+export function nextMode({
+  navigating,
+  gnss,
+  inference,
+  windowReady,
+  hasAnchor,
+}: ModeInput): NavigationMode {
   if (!navigating) return 'IDLE';
   if (gnss === 'ACTIVE' || gnss === 'WEAK') return 'GNSS';
-  // GNSS is OUTAGE or UNAVAILABLE from here on
+  // "Still looking for the first fix" is its own state. Treating it as an
+  // outage meant the app announced GNSS LOST before it had ever been found,
+  // and then fell straight to DEGRADED because dead reckoning has no anchor to
+  // start from. The driver saw "position unavailable" seconds after Start.
+  if (gnss === 'ACQUIRING') return 'ACQUIRING';
+  // GNSS is OUTAGE or UNAVAILABLE from here on.
+  // Dead reckoning needs somewhere to reckon FROM, so without a previous fix
+  // there is no honest estimate to offer.
+  if (!hasAnchor) return 'DEGRADED';
   if (inference === 'READY' && windowReady) return 'DEAD_RECKONING';
   return 'DEGRADED';
 }
 
-/** Debounce helper: how many consecutive readings agree with `want`. */
-export class Debouncer {
-  private count = 0;
-  private current: string | null = null;
+/**
+ * Confirmation gate, measured in SECONDS.
+ *
+ * The previous implementation counted consecutive agreeing readings. That is
+ * only meaningful if one caller pushes at one rate, and two did: a GNSS fix and
+ * an inference reply arriving 50 ms apart satisfied a two-sample threshold, so
+ * a single spurious reading flipped the app into dead reckoning. Real-world
+ * receivers produce spurious readings constantly, which is exactly the
+ * "GNSS lost out of nowhere" behaviour.
+ *
+ * Holding a candidate for a wall-clock duration is independent of how often it
+ * is evaluated, so the guarantee is the one that was actually wanted: the new
+ * state must be true continuously for N seconds.
+ */
+export class ConfirmationGate {
+  private candidate: string | null = null;
+  private since = 0;
 
-  /** Returns true when `value` has been seen `threshold` times in a row. */
-  push(value: string, threshold: number): boolean {
-    if (value === this.current) this.count += 1;
-    else {
-      this.current = value;
-      this.count = 1;
+  /** True once `value` has held continuously for `holdS` seconds. */
+  push(value: string, holdS: number, now: number): boolean {
+    if (value !== this.candidate) {
+      this.candidate = value;
+      this.since = now;
     }
-    return this.count >= threshold;
+    return now - this.since >= holdS * 1000;
+  }
+
+  /** Adopt `value` immediately on the next push — for explicit user actions. */
+  force(value: string) {
+    this.candidate = value;
+    this.since = Number.NEGATIVE_INFINITY;
   }
 
   reset() {
-    this.count = 0;
-    this.current = null;
+    this.candidate = null;
+    this.since = 0;
   }
 }
 
@@ -95,6 +139,23 @@ export interface EngineSnapshot {
   lastInferenceMs: number | null;
   lastInferenceAt: number | null;
   startedAt: number | null;
+  /** seconds since start(), maintained by the engine heartbeat.
+   *  Screens used to compute this from `Date.now()` at render time, which
+   *  froze the whole drive on whatever value the last engine emission
+   *  happened to land on. A clock has to be driven by a clock. */
+  elapsedS: number;
+  /** seconds the current outage has been running, by the device clock. The
+   *  model's own `duration_s` counts INFERRED WINDOWS, so it reads 00:00 for
+   *  as long as inference is not yet producing — true, but useless as the
+   *  "how long have we been on the AI" readout. */
+  outageElapsedS: number;
+  /** last position the app could justify, kept across DEGRADED so the map
+   *  never blanks out. `position` is null when nothing is trustworthy;
+   *  this is the breadcrumb, always labelled as stale in the UI. */
+  lastKnown: LatLng | null;
+  lastKnownAt: number | null;
+  /** seconds since `lastKnown` was established — how stale the held position is */
+  heldS: number;
   distanceM: number;
   windowFill: number;
   windowRequired: number;
@@ -124,6 +185,11 @@ const EMPTY: EngineSnapshot = {
   lastInferenceMs: null,
   lastInferenceAt: null,
   startedAt: null,
+  elapsedS: 0,
+  outageElapsedS: 0,
+  lastKnown: null,
+  lastKnownAt: null,
+  heldS: 0,
   distanceM: 0,
   windowFill: 0,
   windowRequired: 50,
@@ -140,10 +206,11 @@ export class NavigationEngine {
   private state: EngineSnapshot = { ...EMPTY };
   private listeners = new Set<(s: EngineSnapshot) => void>();
   private uploadTimer: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private backend: InferenceBackend | null = null;
   private mode: InferenceMode = 'auto';
   private failures = 0;
-  private outageDebounce = new Debouncer();
+  private modeGate = new ConfirmationGate();
   private navigating = false;
   private gnssSamples = 0;
   private gnssGoodSamples = 0;
@@ -183,7 +250,7 @@ export class NavigationEngine {
     this.speedSum = 0;
     this.speedCount = 0;
     this.maxSpeed = 0;
-    this.outageDebounce.reset();
+    this.modeGate.reset();
 
     this.gnss.onStatus = (s) => this.onGnss(s);
     this.gnss.setClockOrigin(Date.now());
@@ -216,6 +283,7 @@ export class NavigationEngine {
     }
 
     this.uploadTimer = setInterval(() => void this.flush(), TUNING.UPLOAD_INTERVAL_MS);
+    this.heartbeatTimer = setInterval(() => this.heartbeat(), TUNING.HEARTBEAT_MS);
     this.recomputeMode();
 
     if (!motionOk) {
@@ -238,13 +306,38 @@ export class NavigationEngine {
     return { ok: true };
   }
 
+  // -------------------------------------------------------------- heartbeat
+  /**
+   * The engine's own tick.
+   *
+   * Everything used to be event-driven off a GNSS fix or an inference reply,
+   * which is why the app appeared to freeze the moment either stopped arriving:
+   * the elapsed clock stopped, the outage clock stopped, and a receiver that
+   * had silently died still looked healthy because nobody re-read its age.
+   * One timer removes all three failure modes.
+   */
+  private heartbeat() {
+    if (!this.navigating) return;
+    const now = Date.now();
+    const s = this.state;
+    this.set({
+      elapsedS: s.startedAt ? (now - s.startedAt) / 1000 : 0,
+      outageElapsedS: s.activeOutage ? (now - s.activeOutage.startedAt) / 1000 : 0,
+      heldS: s.lastKnownAt ? (now - s.lastKnownAt) / 1000 : 0,
+      // re-read the receiver so staleness is evaluated against the clock
+      gnss: this.gnss.status(),
+    });
+    this.recomputeMode();
+  }
+
   // ------------------------------------------------------------------- GNSS
   private onGnss(status: GnssStatus) {
     this.gnssSamples += 1;
     const good = status.state === 'ACTIVE' || status.state === 'WEAK';
     if (good) this.gnssGoodSamples += 1;
 
-    let { gnssPath, distanceM, position, headingDeg, speedMps } = this.state;
+    let { gnssPath, distanceM, position, headingDeg, speedMps, lastKnown, lastKnownAt } =
+      this.state;
     if (good && status.fix) {
       const p = { latitude: status.fix.latitude, longitude: status.fix.longitude };
       const before = gnssPath;
@@ -255,13 +348,24 @@ export class NavigationEngine {
       position = p;
       headingDeg = status.fix.bearing ?? headingDeg;
       speedMps = status.fix.speed ?? speedMps;
+      lastKnown = p;
+      lastKnownAt = Date.now();
       if (status.fix.speed !== null) {
         this.speedSum += status.fix.speed;
         this.speedCount += 1;
         this.maxSpeed = Math.max(this.maxSpeed, status.fix.speed);
       }
     }
-    this.set({ gnss: status, gnssPath, distanceM, position, headingDeg, speedMps });
+    this.set({
+      gnss: status,
+      gnssPath,
+      distanceM,
+      position,
+      headingDeg,
+      speedMps,
+      lastKnown,
+      lastKnownAt,
+    });
     this.recomputeMode();
   }
 
@@ -315,11 +419,16 @@ export class NavigationEngine {
       const drPath = appendPoint(this.state.drPath, p, 1);
       patch.drPath = drPath;
       patch.position = p;
+      patch.lastKnown = p;
+      patch.lastKnownAt = Date.now();
       patch.headingDeg = s.outage.heading_deg;
       patch.speedMps = s.outage.velocity_mps;
       patch.activeOutage = {
         ...this.state.activeOutage,
-        durationS: s.outage.duration_s,
+        // Wall-clock, not the model's inferred-window count. The two agree once
+        // inference is flowing; only the wall clock is right before it is.
+        durationS: (Date.now() - this.state.activeOutage.startedAt) / 1000,
+        inferredS: s.outage.duration_s,
         path: appendPoint(this.state.activeOutage.path, p, 1),
         estimated: p,
         drDistanceM: s.outage.distance_m,
@@ -356,20 +465,55 @@ export class NavigationEngine {
       gnss: this.state.gnss.state,
       inference: this.state.inference,
       windowReady,
+      hasAnchor: this.state.gnss.fix !== null,
     });
-    if (target === this.state.mode) return;
+    if (target === this.state.mode) {
+      this.modeGate.reset();
+      return;
+    }
 
-    const leavingGnss = this.state.mode === 'GNSS' || this.state.mode === 'IDLE';
-    const threshold =
-      target === 'GNSS' ? TUNING.RECOVERY_CONFIRM_SAMPLES : TUNING.OUTAGE_CONFIRM_SAMPLES;
-    if (!this.outageDebounce.push(target, threshold)) return;
+    // Leaving a good GNSS position is the expensive, user-visible transition,
+    // so it is the one that has to be certain. Coming back is cheap: a real fix
+    // is better than an estimate, so trust it sooner.
+    const holdS =
+      target === 'GNSS' || target === 'ACQUIRING'
+        ? TUNING.RECOVERY_CONFIRM_S
+        : TUNING.OUTAGE_CONFIRM_S;
+    if (!this.modeGate.push(target, holdS, Date.now())) return;
+    this.modeGate.reset();
 
-    if (target === 'DEAD_RECKONING' && leavingGnss) void this.openOutage();
-    else if (this.state.mode === 'DEAD_RECKONING' && target === 'GNSS') void this.closeOutage();
-    else this.set({ mode: target });
+    const gnssBack = target === 'GNSS';
+    if (target === 'DEAD_RECKONING' && this.state.mode !== 'DEAD_RECKONING') {
+      void this.openOutage();
+    } else if (this.state.activeOutage && gnssBack) {
+      void this.closeOutage();
+    } else if (this.state.activeOutage && target === 'DEGRADED') {
+      // Inference stumbled mid-outage but GNSS is still gone. Do NOT end the
+      // outage: it is one continuous event, and closing it would throw away
+      // the anchor and the track so far. Mark it degraded and keep the record.
+      this.set({
+        mode: 'DEGRADED',
+        activeOutage: { ...this.state.activeOutage, degraded: true },
+      });
+    } else {
+      this.set({ mode: target });
+    }
+  }
+
+  /** Skip the confirmation delay for a transition the user asked for. */
+  private forceMode(target: NavigationMode) {
+    this.modeGate.force(target);
+    this.recomputeMode();
   }
 
   private async openOutage() {
+    // Resuming after a mid-outage inference stumble: the backend still holds
+    // the outage, so re-opening it would throw and drop the driver back to
+    // DEGRADED for good.
+    if (this.state.activeOutage) {
+      this.set({ mode: 'DEAD_RECKONING' });
+      return;
+    }
     const fix = this.state.gnss.fix;
     if (!fix || !this.backend) {
       this.set({ mode: 'DEGRADED' });
@@ -388,6 +532,7 @@ export class NavigationEngine {
       startedAt: Date.now(),
       endedAt: null,
       durationS: 0,
+      inferredS: 0,
       anchor,
       path: [{ latitude: fix.latitude, longitude: fix.longitude }],
       estimated: null,
@@ -421,13 +566,18 @@ export class NavigationEngine {
       this.set({ mode: 'GNSS' });
       return;
     }
-    let finished: OutageEvent = { ...active, endedAt: Date.now() };
+    const endedAt = Date.now();
+    let finished: OutageEvent = {
+      ...active,
+      endedAt,
+      durationS: (endedAt - active.startedAt) / 1000,
+    };
     if (this.backend) {
       try {
         const outage = await this.backend.endOutage(fix);
         finished = {
           ...finished,
-          durationS: outage.duration_s || finished.durationS,
+          inferredS: outage.duration_s || finished.inferredS,
           drDistanceM: outage.dr_distance_m || finished.drDistanceM,
           path: outage.path.length ? outage.path : finished.path,
           estimated: outage.estimated ?? finished.estimated,
@@ -442,13 +592,27 @@ export class NavigationEngine {
     this.set({
       mode: 'GNSS',
       activeOutage: null,
+      outageElapsedS: 0,
       outages: [...this.state.outages, finished],
     });
   }
 
-  /** Demo/testing control: force the receiver to look dead. */
+  /** Demo/testing control: force the receiver to look dead.
+   *  The confirmation delay exists to reject receiver noise; the user pressing
+   *  a button is not noise, so this transition is immediate. */
   simulateOutage(on: boolean) {
     this.gnss.setSimulatedOutage(on);
+    this.set({ gnss: this.gnss.status() });
+    const windowReady = this.state.windowFill >= this.state.windowRequired;
+    this.forceMode(
+      nextMode({
+        navigating: this.navigating,
+        gnss: this.state.gnss.state,
+        inference: this.state.inference,
+        windowReady,
+        hasAnchor: this.state.gnss.fix !== null,
+      }),
+    );
   }
 
   // -------------------------------------------------------------------- stop
@@ -457,6 +621,8 @@ export class NavigationEngine {
     this.navigating = false;
     if (this.uploadTimer) clearInterval(this.uploadTimer);
     this.uploadTimer = null;
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    this.heartbeatTimer = null;
     if (this.state.activeOutage) await this.closeOutage();
     this.sensors.stop();
     this.gnss.stop();

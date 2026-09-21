@@ -43,7 +43,7 @@ export interface GnssSample {
   t: number;
 }
 
-export type GnssState = 'ACTIVE' | 'WEAK' | 'OUTAGE' | 'UNAVAILABLE';
+export type GnssState = 'ACQUIRING' | 'ACTIVE' | 'WEAK' | 'OUTAGE' | 'UNAVAILABLE';
 
 export interface GnssStatus {
   state: GnssState;
@@ -152,6 +152,9 @@ export interface HealthStatus {
 export type NavigationMode =
   /** not navigating */
   | 'IDLE'
+  /** navigating, but the receiver has not produced its first fix yet. This is
+   *  NOT an outage: there is nothing to dead-reckon from until one arrives. */
+  | 'ACQUIRING'
   /** GNSS is the position source */
   | 'GNSS'
   /** GNSS is gone and the frozen model is producing the position */
@@ -169,7 +172,12 @@ export interface OutageEvent {
   /** ms since epoch */
   startedAt: number;
   endedAt: number | null;
+  /** wall-clock length of the outage, seconds */
   durationS: number;
+  /** seconds of the outage the model actually inferred over. Below durationS
+   *  whenever windows were dropped for being out of the 10 Hz contract, so the
+   *  gap between the two is the honest coverage figure. */
+  inferredS: number;
   anchor: OutageAnchor;
   /** dead-reckoned path produced by the frozen pipeline */
   path: LatLng[];

@@ -4,10 +4,21 @@
  * One spacing scale, one type scale, one palette per scheme. Screens and
  * components read from here and never hard-code a colour or a pixel gap.
  *
- * The palette is deliberately restrained: a deep neutral ground, a single
- * signal blue for the product, and four semantic status colours that carry the
- * navigation state. Status colour is always paired with a label and a shape, so
- * the interface never depends on colour alone.
+ * ## Monochrome by default
+ *
+ * The ground is black, the type is white, and the chrome is built from grey
+ * steps of that same neutral — no tinted surfaces, no brand blue on furniture.
+ * Colour is a signal, not decoration: the only saturated pixels in the app mark
+ * navigation state (GNSS good / weak / lost / AI) and the two map trajectories.
+ * That is what makes the GNSS→AI handover impossible to miss. If buttons, cards
+ * and icons were also blue, the one thing the driver must notice would be
+ * competing with the furniture for attention.
+ *
+ * Status colour is always paired with a label and a shape, so the interface
+ * never depends on colour alone.
+ *
+ * Contrast: text on `background` and on `surface` clears WCAG AA (4.5:1) in
+ * both schemes; `textTertiary` is reserved for non-essential labels at 3:1+.
  */
 
 export const Spacing = {
@@ -44,54 +55,59 @@ export const Type = {
 /** Status colours are shared across schemes so a state reads the same everywhere. */
 const status = {
   /** GNSS ACTIVE */
-  ok: '#22C55E',
+  ok: '#30D158',
   /** GNSS WEAK */
-  warn: '#F59E0B',
-  /** GNSS OUTAGE */
-  danger: '#EF4444',
+  warn: '#FFD60A',
+  /** GNSS OUTAGE / position held */
+  danger: '#FF453A',
   /** AI DEAD RECKONING ACTIVE */
-  ai: '#3B82F6',
+  ai: '#0A84FF',
   /** service offline / unknown */
-  idle: '#8B93A1',
+  idle: '#8E8E93',
 } as const;
 
 export const Palette = {
   dark: {
-    background: '#0B0E14',
-    surface: '#141922',
-    surfaceRaised: '#1C222D',
-    surfaceSunken: '#0F131A',
-    border: '#252C38',
-    borderStrong: '#333C4B',
-    text: '#F2F5F9',
-    textSecondary: '#9AA4B4',
-    textTertiary: '#6B7585',
-    accent: '#4C8DFF',
-    accentSoft: 'rgba(76,141,255,0.16)',
-    overlay: 'rgba(11,14,20,0.88)',
-    /** map trajectory colours */
-    trackGnss: '#4C8DFF',
-    trackDr: '#F59E0B',
-    trackTruth: '#22C55E',
+    background: '#000000',
+    surface: '#111111',
+    surfaceRaised: '#1C1C1E',
+    surfaceSunken: '#0A0A0A',
+    border: '#242426',
+    borderStrong: '#3A3A3C',
+    text: '#FFFFFF',
+    textSecondary: '#A1A1A6',
+    textTertiary: '#6E6E73',
+    /** the neutral "interactive" colour: white on black, not a brand hue */
+    accent: '#FFFFFF',
+    accentSoft: 'rgba(255,255,255,0.10)',
+    overlay: 'rgba(0,0,0,0.82)',
+    /** map trajectory colours — the only place two hues must be told apart at
+     *  a glance, so they stay saturated even in the monochrome scheme */
+    trackGnss: '#FFFFFF',
+    trackDr: '#0A84FF',
+    trackTruth: '#30D158',
     ...status,
   },
   light: {
-    background: '#F6F8FB',
+    background: '#FFFFFF',
     surface: '#FFFFFF',
     surfaceRaised: '#FFFFFF',
-    surfaceSunken: '#EEF1F6',
-    border: '#DFE4EC',
-    borderStrong: '#C6CEDA',
-    text: '#0C1220',
-    textSecondary: '#525E72',
-    textTertiary: '#7C8798',
-    accent: '#1F6FEB',
-    accentSoft: 'rgba(31,111,235,0.12)',
-    overlay: 'rgba(246,248,251,0.92)',
-    trackGnss: '#1F6FEB',
-    trackDr: '#C2740A',
-    trackTruth: '#15803D',
+    surfaceSunken: '#F2F2F7',
+    border: '#E5E5EA',
+    borderStrong: '#C7C7CC',
+    text: '#000000',
+    textSecondary: '#5B5B60',
+    textTertiary: '#8E8E93',
+    accent: '#000000',
+    accentSoft: 'rgba(0,0,0,0.06)',
+    overlay: 'rgba(255,255,255,0.88)',
+    trackGnss: '#000000',
+    trackDr: '#0A6DD4',
+    trackTruth: '#1D9E4B',
     ...status,
+    // the two status colours that fail on white at their dark-scheme values
+    ok: '#1D9E4B',
+    warn: '#9A6B00',
   },
 } as const;
 

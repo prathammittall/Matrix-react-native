@@ -193,3 +193,13 @@ export function IconWarning(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconChevronDown(p: IconProps) {
+  const s = p.size ?? 18;
+  const t = useTint(p);
+  return (
+    <Svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 9l7 7 7-7" stroke={t} {...stroke} />
+    </Svg>
+  );
+}

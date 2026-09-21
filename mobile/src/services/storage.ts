@@ -20,8 +20,12 @@ export type Units = 'metric' | 'imperial';
  *  app deliberately has no map billing dependency. */
 export type MapStyle = 'standard' | 'terrain';
 
+export type ThemePreference = 'system' | 'dark' | 'light';
+
 export interface Settings {
   units: Units;
+  /** black is the default: the app is used at the windscreen, often at night */
+  theme: ThemePreference;
   mapStyle: MapStyle;
   followVehicle: boolean;
   showGnssTrack: boolean;
@@ -36,6 +40,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   units: 'metric',
+  theme: 'dark',
   mapStyle: 'standard',
   followVehicle: true,
   showGnssTrack: true,

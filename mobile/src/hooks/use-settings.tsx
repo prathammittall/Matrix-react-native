@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { setApiBaseUrl } from '@/services/api';
+import { setThemePreference } from '@/theme';
 import { DEFAULT_SETTINGS, storage, type Settings } from '@/services/storage';
 
 interface SettingsContextValue {
@@ -27,6 +28,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (!alive) return;
       setSettings(s);
       setApiBaseUrl(s.apiUrl);
+      setThemePreference(s.theme);
       setLoaded(true);
     });
     return () => {
@@ -38,6 +40,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => {
       const next = { ...prev, [key]: value };
       if (key === 'apiUrl') setApiBaseUrl(next.apiUrl);
+      if (key === 'theme') setThemePreference(next.theme);
       void storage.saveSettings(next);
       return next;
     });
@@ -46,6 +49,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
     setApiBaseUrl(DEFAULT_SETTINGS.apiUrl);
+    setThemePreference(DEFAULT_SETTINGS.theme);
     void storage.saveSettings(DEFAULT_SETTINGS);
   }, []);
 

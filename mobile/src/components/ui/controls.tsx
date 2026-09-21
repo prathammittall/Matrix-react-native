@@ -1,6 +1,7 @@
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  LayoutAnimation,
   Pressable,
   StyleSheet,
   Switch,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 
 import { HIT_SLOP, MIN_TOUCH, Radius, Spacing, useColors } from '@/theme';
+import { IconChevronDown, IconChevronRight } from './icons';
 import { Row, Txt, type Tone } from './primitives';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -233,6 +235,15 @@ export function SegmentedControl<T extends string>({
 }
 
 const styles = StyleSheet.create({
+  disclosure: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    minHeight: MIN_TOUCH,
+    paddingVertical: Spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: Spacing.md,
+  },
   button: {
     minHeight: MIN_TOUCH,
     paddingHorizontal: Spacing.lg,
@@ -274,3 +285,60 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs,
   },
 });
+
+/**
+ * Progressive disclosure.
+ *
+ * The navigation screen has one job while the vehicle is moving: say where it
+ * is and which source says so. Everything else — raw IMU channels, inference
+ * latency, window fill, backend identity — is diagnostic detail that a driver
+ * never needs and an engineer always does. Putting it behind a disclosure lets
+ * both be true without two builds of the app.
+ *
+ * Collapsed content is not rendered at all, so a closed section costs nothing
+ * per frame. That matters here: the panels inside re-render at 4 Hz.
+ */
+export function Disclosure({
+  title,
+  subtitle,
+  children,
+  initiallyOpen = false,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  initiallyOpen?: boolean;
+}) {
+  const c = useColors();
+  const [open, setOpen] = useState(initiallyOpen);
+
+  return (
+    <View style={{ gap: Spacing.md }}>
+      <Pressable
+        onPress={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setOpen((v) => !v);
+        }}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={title}
+        accessibilityHint={open ? 'Collapses this section' : 'Expands this section'}
+        hitSlop={HIT_SLOP}
+        style={({ pressed }) => [
+          styles.disclosure,
+          { borderColor: c.border, opacity: pressed ? 0.6 : 1 },
+        ]}>
+        <View style={{ flex: 1, gap: 1 }}>
+          <Txt variant="label">{title}</Txt>
+          {subtitle ? (
+            <Txt variant="caption" color="textTertiary" numberOfLines={1}>
+              {subtitle}
+            </Txt>
+          ) : null}
+        </View>
+        {open ? <IconChevronDown size={18} color="textSecondary" /> : <IconChevronRight size={18} color="textSecondary" />}
+      </Pressable>
+      {open ? <View style={{ gap: Spacing.md }}>{children}</View> : null}
+    </View>
+  );
+}
