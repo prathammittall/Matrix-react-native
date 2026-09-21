@@ -36,6 +36,9 @@ export interface Settings {
   apiUrl: string;
   /** where the frozen model runs: on the phone, on the service, or prefer-local */
   inferenceMode: InferenceMode;
+  /** ZUPT and yaw-bias removal on the frozen pipeline's output. Off reproduces
+   *  the frozen behaviour exactly — which is what the benchmarks measure. */
+  motionConstraints: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -52,6 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // On-device by default: it is the only mode that survives a tunnel with no
   // signal, which is the case the product exists for.
   inferenceMode: 'ondevice',
+  motionConstraints: true,
 };
 
 function isSession(v: unknown): v is NavigationSession {

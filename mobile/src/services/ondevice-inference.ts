@@ -25,7 +25,8 @@ import { File } from 'expo-file-system';
 import type { InferenceSession as OrtSession } from 'onnxruntime-react-native';
 
 import { FROZEN } from './config';
-import { fuseAndDeadReckon, type FusionConstants } from './frozen-fusion';
+import { fuseAndDeadReckon, deadReckon, type FusionConstants } from './frozen-fusion';
+import { applyMotionConstraints, isStationaryWindow } from './motion-constraints';
 import { bearingFromFrozenHeading, localToLatLng } from './geo';
 import type {
   DeadReckoningState,
@@ -121,7 +122,13 @@ class LocalOutage {
   readonly va: number[] = [];
   readonly yaw: number[] = [];
   readonly times: number[] = [];
+  /** per-sample stationarity, measured from the raw window, not inferred */
+  readonly stationary: boolean[] = [];
   path: LatLng[] = [];
+  /** how much of this outage the vehicle was provably stopped for */
+  zuptSamples = 0;
+  /** yaw-rate bias removed using those stationary samples, rad/s */
+  yawBias = 0;
   // typed as ArrayBufferLike so the frozen-fusion return type assigns cleanly
   private v: Float64Array<ArrayBufferLike> = new Float64Array(0);
   private h: Float64Array<ArrayBufferLike> = new Float64Array(0);
@@ -131,6 +138,8 @@ class LocalOutage {
   constructor(
     readonly anchor: OutageAnchor,
     readonly startedAtS: number,
+    /** false reproduces the frozen behaviour exactly, sample for sample */
+    readonly constraintsEnabled = true,
   ) {}
 
   get samples() {
@@ -141,11 +150,12 @@ class LocalOutage {
     return this.times.length ? this.times[this.times.length - 1] - this.startedAtS : 0;
   }
 
-  append(dv: number, va: number, yaw: number, t: number) {
+  append(dv: number, va: number, yaw: number, t: number, stationary: boolean) {
     this.dv.push(dv);
     this.va.push(va);
     this.yaw.push(yaw);
     this.times.push(t);
+    this.stationary.push(stationary);
   }
 
   /**
@@ -158,17 +168,33 @@ class LocalOutage {
   recompute() {
     if (!this.dv.length) return;
     const out = fuseAndDeadReckon(this.dv, this.va, this.yaw, this.anchor.speed_mps, CONSTANTS);
-    this.v = out.v;
-    this.x = out.x;
-    this.y = out.y;
-    this.h = out.h;
+
+    // The frozen pipeline has now produced velocity and heading. Everything
+    // below operates on that OUTPUT and re-integrates it with the same frozen
+    // `deadReckon`; nothing inside the frozen boundary is touched. With
+    // constraints off, `applyMotionConstraints` returns its inputs unchanged
+    // and the re-integration reproduces `out` exactly.
+    const constrained = applyMotionConstraints(
+      out.v,
+      this.yaw,
+      this.stationary,
+      this.constraintsEnabled,
+    );
+    this.zuptSamples = constrained.zuptSamples;
+    this.yawBias = constrained.yawBias;
+    const dr = deadReckon(constrained.v, constrained.yaw, CONSTANTS.dt);
+
+    this.v = constrained.v;
+    this.x = dr.x;
+    this.y = dr.y;
+    this.h = dr.h;
     const origin = {
       lat0: this.anchor.latitude,
       lon0: this.anchor.longitude,
       heading0Deg: this.anchor.bearing_deg ?? 0,
     };
-    const path: LatLng[] = new Array(out.x.length);
-    for (let i = 0; i < out.x.length; i += 1) path[i] = localToLatLng(out.x[i], out.y[i], origin);
+    const path: LatLng[] = new Array(dr.x.length);
+    for (let i = 0; i < dr.x.length; i += 1) path[i] = localToLatLng(dr.x[i], dr.y[i], origin);
     this.path = path;
   }
 
@@ -186,6 +212,8 @@ class LocalOutage {
         distance_m: 0,
         delta_v: null,
         yaw_rate: null,
+        zupt_samples: 0,
+        yaw_bias: 0,
       };
     }
     const last = this.path[n - 1];
@@ -200,6 +228,8 @@ class LocalOutage {
       distance_m: Math.hypot(this.x[n - 1], this.y[n - 1]),
       delta_v: this.dv[this.dv.length - 1],
       yaw_rate: this.yaw[this.yaw.length - 1],
+      zupt_samples: this.zuptSamples,
+      yaw_bias: this.yawBias,
     };
   }
 }
@@ -284,6 +314,7 @@ export class OnDeviceInference {
 
     const windows: number[][] = [];
     const ends: number[] = [];
+    const stationaryFlags: boolean[] = [];
 
     for (const s of samples) {
       this.buf.push({
@@ -314,6 +345,9 @@ export class OnDeviceInference {
       }
       windows.push(flat);
       ends.push(this.buf[WINDOW - 1].t);
+      // measured from the RAW window, before scaling — the detector works on
+      // physical magnitudes in m/s² and rad/s, not on normalised features
+      stationaryFlags.push(isStationaryWindow(flat, N_FEAT));
     }
 
     if (windows.length) {
@@ -343,7 +377,7 @@ export class OnDeviceInference {
 
       if (this.outage) {
         for (let i = 0; i < windows.length; i += 1) {
-          this.outage.append(dv[i], vAbs[i], yaw[i], ends[i]);
+          this.outage.append(dv[i], vAbs[i], yaw[i], ends[i], stationaryFlags[i]);
         }
         this.outage.recompute();
       }
@@ -352,10 +386,14 @@ export class OnDeviceInference {
     return this.state();
   }
 
+  /** Motion constraints on the frozen pipeline's output. Off reproduces the
+   *  frozen behaviour exactly; see `motion-constraints.ts`. */
+  constraintsEnabled = true;
+
   startOutage(anchor: OutageAnchor) {
     if (this.outage) throw new OnDeviceModelError('an outage is already active');
     const startedAt = anchor.timestamp_s ?? this.buf[this.buf.length - 1]?.t ?? 0;
-    this.outage = new LocalOutage(anchor, startedAt);
+    this.outage = new LocalOutage(anchor, startedAt, this.constraintsEnabled);
     return this.state();
   }
 

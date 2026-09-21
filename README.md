@@ -187,8 +187,10 @@ dataset, splits, configs. Verify at any time:
 python backend/tools/verify_ml_integrity.py
 ```
 
-Expected: `UNCHANGED - every frozen artifact is byte-identical to the baseline`
-(638 files, dataset excluded).
+Expected: `UNCHANGED - every frozen artifact present here matches the baseline`,
+alongside a count of derived files that are absent because .gitignore excludes
+them. A clone has 151 of the manifest's 638 files; the other 487 are parquet and
+npy outputs of `pass1..pass12`, regenerable and deliberately not committed.
 
 Everything this project adds — the sampling grid, the state machine, the
 hysteresis, the UI — lives *outside* that boundary and consumes the model
@@ -289,19 +291,28 @@ and the spaces in a long project path break the native phase. See
 - Fixed 10 Hz sampling grid, so windows are actually accepted.
 - Time-based outage confirmation with hysteresis — no spurious GNSS loss.
 - Engine heartbeat — clocks and staleness no longer depend on a fix arriving.
+- **ZUPT and yaw-bias removal** on the frozen pipeline's output: the vehicle
+  stops accumulating distance while it is provably stationary, and the yaw-rate
+  bias measured during those moments is removed from the whole outage. Switchable
+  off, which reproduces the frozen behaviour exactly.
 - Nine screens, on-device inference, MapLibre basemap with no API key and no
   billing, full offline navigation.
-- 168 frontend tests, 28 backend tests, clean typecheck.
+- 184 frontend tests, 43 backend tests, clean typecheck. (One backend test,
+  `test_onnx_graphs_match_pytorch_within_tolerance`, needs the gitignored test
+  split on disk and is skipped in practice on a fresh clone — the parity it
+  checks was verified when the graphs were exported.)
 - Release APK verified on a real device (vivo V2153, Android 15).
 
 ### Not yet done
 
 - **A real drive with a real tunnel.** Everything so far has been verified
   stationary, indoors, or against replayed data. On-road outage entry and exit
-  against a real fix is the one thing that has not been exercised.
-- Zero-velocity and non-holonomic constraints on the filter output — the
-  single highest-value next step, see [RESEARCH.md](RESEARCH.md).
-- Per-device IMU calibration.
+  against a real fix is the one thing that has not been exercised — and the ZUPT
+  thresholds in particular are reasoned, not yet measured against the VBOX
+  reference.
+- An uncertainty estimate — the map shows a point, and it looks as confident at
+  300 s as at 3 s. See [RESEARCH.md](RESEARCH.md) §4.2.
+- Per-device IMU calibration and recalibration for a new vehicle.
 - Signed release builds (currently signed with the debug keystore).
 
 ---

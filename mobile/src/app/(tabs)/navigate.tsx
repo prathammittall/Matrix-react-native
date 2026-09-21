@@ -99,10 +99,11 @@ export default function NavigateScreen() {
     setStarting(true);
     // where the frozen model runs is the user's choice; it takes effect here
     engine.setInferenceMode(settings.inferenceMode);
+    engine.setMotionConstraints(settings.motionConstraints);
     const res = await engine.start();
     setStarting(false);
     if (res.error) Alert.alert('Navigation started with limits', res.error);
-  }, [settings.inferenceMode]);
+  }, [settings.inferenceMode, settings.motionConstraints]);
 
   const onStop = useCallback(async () => {
     const session = await engine.stop();

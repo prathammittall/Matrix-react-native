@@ -90,7 +90,12 @@ distribution of mounting orientations was.
   cornering, and speed bumps, and a filter that trusts them blindly through a
   skid will confidently produce a wrong answer.
 
-  **This is the highest-value thing MATRIX could add.** See §4.1.
+  **Partly adopted.** The gating idea — trust a motion assumption only when the
+  signal says it holds — is what `motion-constraints.ts` does for ZUPT. The
+  lateral-velocity constraint itself turned out to be structural in MATRIX's
+  formulation rather than something to add; see §4.1. The genuinely unadopted
+  part is the *filter*: MATRIX fuses with a fixed-τ complementary filter, not an
+  IEKF with learned covariances, so it has no uncertainty to report. See §4.2.
 
 ### 2.3 Learned inertial odometry more broadly
 
@@ -127,20 +132,32 @@ not, and neither do their reported error figures.
 | Complementary fusion with an absolute-velocity anchor | done, frozen, ported to TS with golden-vector parity |
 | Exact 10 Hz input contract on a live phone | **done** — fixed sampling grid |
 | Outage detection that does not fire on noise | **done** — time-based confirmation + hysteresis |
-| Zero-velocity detection (ZUPT) | **not done** |
-| Non-holonomic constraints | **not done** |
+| Zero-velocity detection (ZUPT) | **done** — `mobile/src/services/motion-constraints.ts` |
+| ZUPT-aided yaw-rate bias removal | **done** — same module |
+| Non-holonomic constraints | structural: the frozen `deadReckon` advances only along the heading, so there is no lateral velocity to constrain |
 | Live phone-to-vehicle frame estimation | **not done** — inherited from training only |
 | Uncertainty estimate on the position | **not done** — the app shows a point, not an ellipse |
 | Map matching | **not done** |
 | Per-device calibration / recalibration | **not done** |
 
-The first four rows are the product. The rest is the roadmap, ranked below.
+The first six rows are the product. The rest is the roadmap, ranked below.
 
 ---
 
 ## 4. Roadmap, in order of value per unit of risk
 
-### 4.1 Zero-velocity and non-holonomic constraints — **do this first**
+### 4.1 Zero-velocity and non-holonomic constraints — **done, needs measuring**
+
+> **Status:** implemented in `mobile/src/services/motion-constraints.ts`, applied
+> to the frozen pipeline's output and re-integrated through the frozen
+> `deadReckon`, switchable from Settings. What remains is the part that needs a
+> vehicle: the thresholds below are reasoned from the physics and the sensor
+> noise floor, and have **not** been tuned against the VBOX reference on the test
+> split. Until they are, treat the improvement as expected rather than measured.
+>
+> NHC turned out to be structural rather than something to add — the frozen
+> formulation has no lateral velocity state — and that is recorded in the module
+> so nobody later adds a no-op believing it does something.
 
 **What:** two post-processing constraints applied to the frozen pipeline's
 *output*, not to the model:
@@ -166,9 +183,11 @@ and no new data collection.
 The detector must be conservative and the threshold has to be validated against
 the VBOX reference on the test split, not guessed.
 
-**Where it goes:** a new module beside `frozen-fusion.ts`, applied after
-`fuseAndDeadReckon`, with the same golden-vector discipline — a Python reference
-implementation and a TS port pinned to it.
+**Where it went:** `motion-constraints.ts`, beside `frozen-fusion.ts`, applied
+after `fuseAndDeadReckon`. The property pinned by test is the important one:
+with constraints disabled the re-integrated track is bit-identical to the frozen
+one, so the benchmark figures remain measurable. A Python reference
+implementation for the backend path is still outstanding.
 
 ### 4.2 An uncertainty estimate
 

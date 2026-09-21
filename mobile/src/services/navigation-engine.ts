@@ -34,6 +34,7 @@ import {
   type InferenceBackend,
   type InferenceMode,
 } from './inference-backend';
+import { onDevice } from './ondevice-inference';
 import { SensorService } from './sensors';
 import { appendPoint, pathLengthM } from './track';
 import type {
@@ -238,6 +239,12 @@ export class NavigationEngine {
   /** Choose where the frozen model runs. Takes effect on the next start(). */
   setInferenceMode(mode: InferenceMode) {
     this.mode = mode;
+  }
+
+  /** Enable ZUPT and yaw-bias removal on the frozen pipeline's output.
+   *  Takes effect on the next outage. See `motion-constraints.ts`. */
+  setMotionConstraints(on: boolean) {
+    onDevice.constraintsEnabled = on;
   }
 
   async start(): Promise<{ ok: boolean; error?: string }> {

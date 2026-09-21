@@ -199,6 +199,28 @@ export default function SettingsScreen() {
         </Card>
         </Disclosure>
 
+        <Disclosure
+          title="Motion constraints"
+          subtitle={settings.motionConstraints ? 'On — ZUPT and yaw-bias removal' : 'Off — raw frozen output'}>
+          <Card padded={false}>
+            <ToggleRow
+              first
+              last
+              title="Zero-velocity and yaw-bias correction"
+              subtitle="Hold position while the vehicle is provably stopped, and remove the yaw-rate bias measured during those moments"
+              value={settings.motionConstraints}
+              onChange={(v) => update('motionConstraints', v)}
+            />
+          </Card>
+          <Txt variant="caption" color="textTertiary">
+            These constraints are applied to the frozen pipeline&apos;s output and never to the
+            model itself. Every second stopped at a junction is otherwise a second of invented
+            distance, and a stationary vehicle is a direct measurement of the yaw-rate bias that
+            dominates long outages. Turning this off reproduces the frozen behaviour exactly —
+            which is what the published benchmark figures measure.
+          </Txt>
+        </Disclosure>
+
         <Disclosure title="Frozen model" subtitle="Read-only — fixed by training">
         <Card padded={false}>
           <ListRow first title="Model" subtitle="MATRIX DR — frozen" right={<Txt variant="caption" color="textTertiary">read-only</Txt>} />

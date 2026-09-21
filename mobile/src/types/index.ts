@@ -102,6 +102,12 @@ export interface DeadReckoningState {
   distance_m: number;
   delta_v: number | null;
   yaw_rate: number | null;
+  /** samples the vehicle was provably stationary for (ZUPT). Optional because
+   *  the FastAPI service does not compute it — constraints are an app-side
+   *  addition outside the frozen boundary. */
+  zupt_samples?: number;
+  /** yaw-rate bias removed using those stationary samples, rad/s */
+  yaw_bias?: number;
 }
 
 export interface ServiceSessionState {
