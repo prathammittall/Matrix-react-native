@@ -297,3 +297,66 @@ one unseen driver. Model assumes exactly 10 Hz; out-of-spec windows are dropped,
 not resampled. Needs a velocity anchor at outage start — production uses the last
 GNSS fix, whose error propagates. Beyond ~300 s yaw drift dominates. Benchmark
 figures are research results on one dataset, not a real-world guarantee.
+
+---
+
+# Session addendum — 2026-09-21, branch `feat/robust-dr-and-ui`
+
+Written after the first on-road test of the release APK, which showed the app
+announcing *AI DEAD RECKONING ACTIVE — 00:00 · 0 m* while the vehicle drove
+away, and declaring GNSS lost on a clear road.
+
+## What was actually wrong
+
+**Dead reckoning produced no motion at all.** Not a model problem — an input
+problem. The IMU emitter stamped each sample with the wall clock at whatever
+moment `setInterval(100)` happened to fire. RN timer drift pushed a 50-sample
+window's span to 5.3–5.5 s against a nominal 4.9 s, outside the frozen ±10 %
+contiguity tolerance, so `ingest` rejected **every** window. `windows_inferred`
+never left zero, the outage accumulated nothing, and the UI faithfully reported
+a duration and distance of zero. Fixed by emitting onto a fixed grid: sample *n*
+is stamped `n × 0.1` exactly and is due at `t₀ + n × 100 ms`.
+
+**Outage detection fired on noise.** `Debouncer` counted consecutive agreeing
+readings, but `recomputeMode` was called from two sources at different rates —
+a GNSS fix and an inference reply 50 ms apart satisfied the 2-sample threshold.
+Replaced with `ConfirmationGate`, a wall-clock hold. `ACCURACY_OUTAGE_M` also
+went 60 → 150 m with hysteresis: a phone on cell/Wi-Fi positioning reports
+50–100 m, which is a position, not a loss.
+
+**Nothing re-evaluated anything on the clock.** `GnssService.emit()` only ran on
+fix arrival, so `age` was always ~0 in whatever the UI held and a dead receiver
+looked healthy forever; and the screens computed Elapsed from `Date.now()` at
+render time, which froze the display the moment the engine stopped emitting.
+Both fixed by a 2 Hz heartbeat in the engine (`TUNING.HEARTBEAT_MS`) that
+re-reads GNSS and maintains `elapsedS` / `outageElapsedS` / `heldS`.
+
+## Also changed
+
+* `ACQUIRING` is a real state now, for both `GnssState` and `NavigationMode`.
+  Before the first fix the app used to say GNSS LOST and fall to DEGRADED,
+  because dead reckoning had no anchor.
+* DEGRADED holds and labels the last known position (hollow puck) instead of
+  blanking the map. An inference stumble mid-outage no longer *ends* the outage
+  and throws away its anchor and track.
+* `mobile/src/services/motion-constraints.ts` — ZUPT plus yaw-bias removal,
+  outside the frozen boundary, toggleable from Settings. NHC deliberately not
+  implemented; the reason is in the module header.
+* Monochrome theme (black ground, white type), `theme` setting, progressive
+  disclosure on Navigate and Settings.
+* `backend/tools/verify_ml_integrity.py` reported MODIFIED on every fresh clone
+  — line endings and gitignored derived data. Both fixed; it now passes here.
+
+## Still untested
+
+The on-road behaviour these fixes were written for. And the ZUPT thresholds are
+reasoned from the sensor noise floor, not tuned against the VBOX reference.
+See `RESEARCH.md` §4.1.
+
+## Note on the paths in §7 above
+
+They refer to the original machine (`D:\Projects\...`, `C:\mx`). This work was
+done in a clone at `C:\repo\Matrix-react-native`, which had no `node_modules`;
+`npm install` is required before `npm test` or `npm run typecheck`. Do not run
+two `npm install`s concurrently on Windows — they collide with ENOTEMPTY and
+leave a half-installed tree.
