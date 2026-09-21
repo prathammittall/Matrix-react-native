@@ -86,5 +86,10 @@ module.exports = ({ config }) => ({
     // extracted at install. Without it, 16 KB-page arm64 devices (Android 15+)
     // crash to a blank screen on launch. See the plugin for detail.
     './plugins/with-legacy-packaging',
+    // Signs release builds with a fixed, checked-in keystore instead of the
+    // regenerated debug one. Without it, an APK built after any prebuild --
+    // or on any other machine -- fails to install over an existing copy with a
+    // bare "App not installed". See the plugin for the security caveat.
+    './plugins/with-release-signing',
   ],
 });

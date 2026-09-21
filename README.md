@@ -266,14 +266,54 @@ python -m uvicorn matrix_service.api:app --app-dir backend --host 0.0.0.0 --port
 
 ### Release APK
 
+`mobile/android/` is generated and gitignored, so a fresh clone starts with a
+prebuild:
+
 ```bash
-cd mobile/android
-./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+cd mobile
+npm install
+npx expo prebuild --platform android
 ```
 
-Build it from a **short path** (`C:\mx`) on Windows — CMake's object-path limit
-and the spaces in a long project path break the native phase. See
-[`HANDOFF.md`](HANDOFF.md) §7 for the full list of build-environment traps.
+Then, with `JAVA_HOME` pointing at a JDK 17 or 21 (Android Studio ships one at
+`<studio>/jbr` — RN 0.86 will not build on JDK 24):
+
+```bash
+cd android
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+```
+
+Output: `android/app/build/outputs/apk/release/app-release.apk`, ~48 MB,
+arm64-v8a, minSdk 24 (Android 7+), targetSdk 36.
+
+Three things are **not** optional, and all three are enforced by config plugins
+so that `expo prebuild --clean` cannot quietly undo them:
+
+| Plugin | What it guarantees | What breaks without it |
+|---|---|---|
+| `with-onnxruntime-package` | `OnnxruntimePackage()` reaches `PackageList` | `Cannot read property 'install' of null` — crash on launch |
+| `with-legacy-packaging` | `.so` libs are compressed and extracted at install | blank screen then crash on 16 KB-page Android 15 devices |
+| `with-release-signing` | release is signed with a **fixed** keystore | "App not installed" for anyone holding an older build |
+
+Verify after any prebuild:
+
+```bash
+grep OnnxruntimePackage android/app/src/main/java/com/matrix/deadreckoning/MainApplication.kt
+grep useLegacyPackaging android/gradle.properties
+grep matrix-release android/app/build.gradle
+```
+
+And verify the APK is signed with the MATRIX key rather than the debug one —
+this is the check that catches the install problem before your team does:
+
+```bash
+apksigner verify --print-certs app-release.apk   # -> CN=MATRIX, ...
+```
+
+Build-environment notes: build from a path with **no spaces** (CMake's ninja
+phase mangles them); `-PreactNativeArchitectures=arm64-v8a` keeps one ABI, drop
+it for all four; allow ~4 GB of free disk for build outputs on top of the Gradle
+cache and NDK. See [`HANDOFF.md`](HANDOFF.md) §7 for the full list of traps.
 
 ---
 
@@ -301,7 +341,10 @@ and the spaces in a long project path break the native phase. See
   `test_onnx_graphs_match_pytorch_within_tolerance`, needs the gitignored test
   split on disk and is skipped in practice on a fresh clone — the parity it
   checks was verified when the graphs were exported.)
-- Release APK verified on a real device (vivo V2153, Android 15).
+- Release APK builds and is signed with a fixed keystore, so builds from any
+  machine install over one another. Verified `CN=MATRIX`, arm64-v8a, minSdk 24.
+  A previous build was verified running on a real device (vivo V2153,
+  Android 15); **this** build has not been on a phone yet.
 
 ### Not yet done
 
