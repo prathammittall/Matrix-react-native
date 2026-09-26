@@ -28,6 +28,7 @@ export interface Settings {
   showDrTrack: boolean;
   keepAwake: boolean;
   hapticsOnModeChange: boolean;
+  voiceGuidance: boolean;
   technicalDetails: boolean;
   apiUrl: string;
   /** where the frozen model runs: on the phone, on the service, or prefer-local */
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showDrTrack: true,
   keepAwake: true,
   hapticsOnModeChange: true,
+  voiceGuidance: true,
   technicalDetails: false,
   apiUrl: DEFAULT_API_URL,
   // On-device by default: it is the only mode that survives a tunnel with no

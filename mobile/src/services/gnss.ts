@@ -55,6 +55,7 @@ export class GnssService {
   private clockOrigin = Date.now();
   /** consecutive readings in a bad/good state, for debouncing the mode switch */
   private simulatedOutage = false;
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   onStatus: ((s: GnssStatus) => void) | null = null;
 
@@ -92,6 +93,11 @@ export class GnssService {
       },
       (loc) => this.ingest(loc),
     );
+    // `classifyGnss` is age-based, but age only advances if something
+    // re-evaluates it. Fixes only arrive while the receiver is actually
+    // producing them, so with no independent tick, turning GNSS off leaves
+    // whatever state the last fix produced (usually ACTIVE) frozen forever.
+    this.pollTimer = setInterval(() => this.emit(), TUNING.GNSS_POLL_MS);
     this.emit();
     return outcome;
   }
@@ -149,6 +155,10 @@ export class GnssService {
   stop() {
     this.sub?.remove();
     this.sub = null;
+    if (this.pollTimer !== null) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
   }
 }
 

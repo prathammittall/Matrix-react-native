@@ -39,6 +39,16 @@ export const TUNING = {
   /** how often the UI re-reads high-rate buffers (sensor values are throttled,
    *  not rendered per sample) */
   UI_REFRESH_MS: 250,
+  /**
+   * How often GNSS status is re-classified even with no new fix.
+   *
+   * `classifyGnss` is age-based (a fix older than `FIX_TIMEOUT_S` is an
+   * OUTAGE), but age only advances if something re-evaluates it. Without this
+   * ticker, turning GNSS off on the device would leave the last real fix's
+   * classification (typically ACTIVE) frozen on screen forever, since no new
+   * fix ever arrives to trigger a re-check.
+   */
+  GNSS_POLL_MS: 1000,
   /** GNSS is WEAK above this horizontal accuracy */
   ACCURACY_WEAK_M: 25,
   /** GNSS is treated as an OUTAGE above this horizontal accuracy */

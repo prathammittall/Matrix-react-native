@@ -1,5 +1,11 @@
 import { describeStatus } from '@/components/navigation-status';
-import { Debouncer, nextMode, type ModeInput } from '@/services/navigation-engine';
+import {
+  Debouncer,
+  isInferenceReady,
+  modeTransition,
+  nextMode,
+  type ModeInput,
+} from '@/services/navigation-engine';
 
 const base: ModeInput = {
   navigating: true,
@@ -55,6 +61,48 @@ describe('nextMode — navigation mode switching', () => {
       }
     }
     expect([...modes].sort()).toEqual(['DEAD_RECKONING', 'DEGRADED', 'GNSS', 'IDLE']);
+  });
+});
+
+describe('modeTransition — entering/leaving DEAD_RECKONING must open/close a real outage', () => {
+  it('opens an outage on the ordinary GNSS -> DEAD_RECKONING path', () => {
+    expect(modeTransition('GNSS', 'DEAD_RECKONING')).toBe('OPEN_OUTAGE');
+  });
+
+  it('opens an outage from IDLE (navigation started with no fix yet)', () => {
+    expect(modeTransition('IDLE', 'DEAD_RECKONING')).toBe('OPEN_OUTAGE');
+  });
+
+  it('REGRESSION: opens an outage from DEGRADED too — the model finishing its ' +
+    '5 s warm-up while GNSS is already down must not just relabel the mode', () => {
+    expect(modeTransition('DEGRADED', 'DEAD_RECKONING')).toBe('OPEN_OUTAGE');
+  });
+
+  it('closes the outage on recovery to GNSS', () => {
+    expect(modeTransition('DEAD_RECKONING', 'GNSS')).toBe('CLOSE_OUTAGE');
+  });
+
+  it('closes the outage if inference drops mid-outage (DEAD_RECKONING -> DEGRADED)', () => {
+    expect(modeTransition('DEAD_RECKONING', 'DEGRADED')).toBe('CLOSE_OUTAGE');
+  });
+
+  it('is a plain relabel for every other transition', () => {
+    expect(modeTransition('IDLE', 'GNSS')).toBe('SET_MODE');
+    expect(modeTransition('GNSS', 'DEGRADED')).toBe('SET_MODE');
+    expect(modeTransition('DEGRADED', 'GNSS')).toBe('SET_MODE');
+  });
+});
+
+describe('isInferenceReady — READY must mean a window actually ran, not just a full buffer', () => {
+  it('is not ready before any window has been inferred', () => {
+    expect(isInferenceReady(0)).toBe(false);
+  });
+
+  it('REGRESSION: is ready once at least one window has actually run — buffer-fill ' +
+    'alone (which this used to key off) stays true even when every window on a real ' +
+    'device is rejected for bad timing, permanently faking a healthy AI status', () => {
+    expect(isInferenceReady(1)).toBe(true);
+    expect(isInferenceReady(500)).toBe(true);
   });
 });
 

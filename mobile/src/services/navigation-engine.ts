@@ -55,6 +55,40 @@ export function nextMode({ navigating, gnss, inference, windowReady }: ModeInput
   return 'DEGRADED';
 }
 
+export type ModeTransition = 'OPEN_OUTAGE' | 'CLOSE_OUTAGE' | 'SET_MODE';
+
+/**
+ * What the engine must actually DO when the mode label is about to change —
+ * not just what the label should say. Isolated so it is unit-testable:
+ * DEAD_RECKONING must always be entered via openOutage() (which anchors the
+ * position, seeds drPath, and tells the backend to start dead reckoning) and
+ * left via closeOutage() (which finalises the outage record), from ANY prior
+ * mode — including DEGRADED, e.g. GNSS was already down when the model
+ * finished warming up. Gating this on "came from GNSS/IDLE" was the bug: the
+ * badge would say DEAD_RECKONING while the marker, drPath and position never
+ * moved, because no outage had actually been opened.
+ */
+export function modeTransition(current: NavigationMode, target: NavigationMode): ModeTransition {
+  if (target === 'DEAD_RECKONING' && current !== 'DEAD_RECKONING') return 'OPEN_OUTAGE';
+  if (current === 'DEAD_RECKONING' && target !== 'DEAD_RECKONING') return 'CLOSE_OUTAGE';
+  return 'SET_MODE';
+}
+
+/**
+ * Is the inference backend actually ready to produce a position, or only warmed up?
+ *
+ * `windows_inferred` is proof the frozen model has run at least once on THIS
+ * session — unlike raw buffer fill, which only says the 50-sample ring buffer
+ * has 50 entries. On a real device, sample timestamps can drift enough that
+ * every window fails the frozen 10 Hz timing check (see rejected_windows in
+ * Diagnostics); buffer-fill-based readiness let that look identical to a
+ * healthy session — mode flipped to DEAD_RECKONING and stayed there, forever
+ * reporting a frozen position with zero real inferences behind it.
+ */
+export function isInferenceReady(windowsInferred: number): boolean {
+  return windowsInferred > 0;
+}
+
 /** Debounce helper: how many consecutive readings agree with `want`. */
 export class Debouncer {
   private count = 0;
@@ -306,7 +340,7 @@ export class NavigationEngine {
       lastInferenceAt: Date.now(),
       windowFill: s.buffer_fill,
       windowRequired: s.buffer_required,
-      inference: s.buffer_fill >= s.buffer_required ? 'READY' : 'WARMING',
+      inference: isInferenceReady(s.windows_inferred) ? 'READY' : 'WARMING',
       inferenceError: null,
     };
 
@@ -359,14 +393,21 @@ export class NavigationEngine {
     });
     if (target === this.state.mode) return;
 
-    const leavingGnss = this.state.mode === 'GNSS' || this.state.mode === 'IDLE';
     const threshold =
       target === 'GNSS' ? TUNING.RECOVERY_CONFIRM_SAMPLES : TUNING.OUTAGE_CONFIRM_SAMPLES;
     if (!this.outageDebounce.push(target, threshold)) return;
 
-    if (target === 'DEAD_RECKONING' && leavingGnss) void this.openOutage();
-    else if (this.state.mode === 'DEAD_RECKONING' && target === 'GNSS') void this.closeOutage();
-    else this.set({ mode: target });
+    switch (modeTransition(this.state.mode, target)) {
+      case 'OPEN_OUTAGE':
+        void this.openOutage();
+        break;
+      case 'CLOSE_OUTAGE':
+        void this.closeOutage(target);
+        break;
+      case 'SET_MODE':
+        this.set({ mode: target });
+        break;
+    }
   }
 
   private async openOutage() {
@@ -414,11 +455,12 @@ export class NavigationEngine {
     }
   }
 
-  private async closeOutage() {
+  /** target is GNSS on recovery, or DEGRADED if inference dropped mid-outage. */
+  private async closeOutage(target: NavigationMode = 'GNSS') {
     const active = this.state.activeOutage;
     const fix = this.state.gnss.fix;
     if (!active) {
-      this.set({ mode: 'GNSS' });
+      this.set({ mode: target });
       return;
     }
     let finished: OutageEvent = { ...active, endedAt: Date.now() };
@@ -440,7 +482,7 @@ export class NavigationEngine {
       }
     }
     this.set({
-      mode: 'GNSS',
+      mode: target,
       activeOutage: null,
       outages: [...this.state.outages, finished],
     });
