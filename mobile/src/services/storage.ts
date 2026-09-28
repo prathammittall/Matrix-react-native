@@ -39,6 +39,8 @@ export interface Settings {
   /** ZUPT and yaw-bias removal on the frozen pipeline's output. Off reproduces
    *  the frozen behaviour exactly — which is what the benchmarks measure. */
   motionConstraints: boolean;
+  /** speak turn instructions and mode changes aloud */
+  voiceGuidance: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -56,6 +58,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // signal, which is the case the product exists for.
   inferenceMode: 'ondevice',
   motionConstraints: true,
+  voiceGuidance: true,
 };
 
 function isSession(v: unknown): v is NavigationSession {

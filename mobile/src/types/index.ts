@@ -283,3 +283,100 @@ export interface SystemHealth {
   model: ComponentHealth;
   api: ComponentHealth;
 }
+
+// ------------------------------------------------------------- routing
+/**
+ * A place the user can pick as a start or destination.
+ *
+ * `source` records where the coordinates came from, because a place derived
+ * from the live fix must not be re-geocoded and must not be cached.
+ */
+export interface GeoPlace {
+  id: string;
+  /** short name shown in the field, e.g. "Coventry Station" */
+  name: string;
+  /** full address line shown underneath */
+  address: string;
+  latitude: number;
+  longitude: number;
+  source: 'search' | 'device' | 'map';
+}
+
+/** The manoeuvre kinds this app renders. OSRM types are mapped onto these. */
+export type ManeuverKind =
+  | 'depart'
+  | 'straight'
+  | 'slight-left'
+  | 'left'
+  | 'sharp-left'
+  | 'slight-right'
+  | 'right'
+  | 'sharp-right'
+  | 'uturn'
+  | 'roundabout'
+  | 'merge'
+  | 'fork'
+  | 'arrive';
+
+export interface RouteStep {
+  /** index within Route.steps */
+  index: number;
+  kind: ManeuverKind;
+  /** "Turn left onto Foleshill Road" */
+  instruction: string;
+  /** road the step travels along, '' for unnamed service roads */
+  roadName: string;
+  /** length of this step, metres */
+  distanceM: number;
+  /** expected time for this step, seconds */
+  durationS: number;
+  /** distance from the route origin to where this manoeuvre happens */
+  startOffsetM: number;
+  /** where the manoeuvre happens */
+  location: LatLng;
+  /** roundabout exit number, when the router supplied one */
+  exit: number | null;
+}
+
+export interface Route {
+  id: string;
+  origin: GeoPlace;
+  destination: GeoPlace;
+  /** full geometry, origin first */
+  geometry: LatLng[];
+  /** cumulative distance to geometry[i], metres. Same length as geometry. */
+  cumulativeM: number[];
+  steps: RouteStep[];
+  distanceM: number;
+  durationS: number;
+  /** ms since epoch, so a cached route can be shown with its age */
+  createdAt: number;
+  /** which router produced it */
+  provider: string;
+}
+
+/** Live guidance derived from the current position and a Route. */
+export interface GuidanceState {
+  /** distance travelled along the route, metres */
+  distanceAlongM: number;
+  distanceRemainingM: number;
+  /** seconds remaining, from the router's own step durations */
+  durationRemainingS: number;
+  /** ms since epoch */
+  etaAt: number;
+  /** perpendicular distance from the route polyline, metres */
+  offRouteM: number;
+  onRoute: boolean;
+  /** the step being driven now */
+  step: RouteStep | null;
+  /** the manoeuvre being approached */
+  nextStep: RouteStep | null;
+  /** the manoeuvre after that, for the "then ..." line */
+  followingStep: RouteStep | null;
+  distanceToManeuverM: number;
+  /** the position projected onto the route — what the guidance line follows */
+  snapped: LatLng;
+  /** bearing of the route at the snapped point, degrees from north */
+  routeBearingDeg: number;
+  arrived: boolean;
+}

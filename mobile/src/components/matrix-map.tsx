@@ -225,7 +225,13 @@ export const MatrixMap = forwardRef<MatrixMapHandle, MatrixMapProps>(function Ma
           center: [region.longitude, region.latitude],
           zoom: zoomForDelta(region.latitudeDelta),
         }}
-        {...(followVehicle && vehicle ? { center: toLngLat(vehicle.coordinate) } : {})}
+        // The follow camera is stepped, not animated: the vehicle coordinate is
+        // already eased by `useSmoothVehicle` at ~20 Hz, so asking the native
+        // camera for a 500 ms ease on top would mean every frame interrupting
+        // the last one — which is what makes a follow camera feel rubbery.
+        {...(followVehicle && vehicle
+          ? { center: toLngLat(vehicle.coordinate), duration: 0, easing: 'linear' as const }
+          : {})}
       />
 
       {accuracyM && vehicle ? (

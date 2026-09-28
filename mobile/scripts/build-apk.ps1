@@ -71,9 +71,35 @@ if ($Staging -ne $app) {
     # (expo-modules-autolinking among them) ship real source in a build/ folder,
     # and excluding it breaks Gradle autolinking with a confusing
     # "Cannot find module '../build'".
-    robocopy $app $Staging /MIR /XD '.gradle' '.expo' '.git' /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+    #
+    # DO exclude ".cxx". Those are CMake/ninja caches, and they record the
+    # ABSOLUTE path they were configured for. If a build has ever been run in
+    # place (e.g. `expo run:android` from the real project directory), mirroring
+    # them makes CMake in the staging copy re-use the original space-containing
+    # path, and reanimated then fails with
+    #   ninja: Entering directory `...\Pre ppt round prototype\...`
+    # which is the exact failure the staging directory exists to avoid.
+    robocopy $app $Staging /MIR /XD '.gradle' '.expo' '.git' '.cxx' /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
     if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
     $global:LASTEXITCODE = 0
+
+    # /XD stops new ones arriving; this clears any left by an earlier mirror
+    # that ran before the exclusion was added.
+    Get-ChildItem -Path $Staging -Directory -Recurse -Force -Filter '.cxx' -ErrorAction SilentlyContinue |
+        ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+
+    # Drop the mirrored Gradle output for the same reason. The one that matters
+    # is android/build/generated/autolinking/autolinking.json: React Native's
+    # settings plugin caches the autolinking result there, with an ABSOLUTE
+    # `sourceDir` per native module. Mirrored from an in-place build, it makes
+    # the staging build compile every native module out of the original
+    # space-containing tree -- reanimated then dies with
+    #   ninja: error: manifest 'build.ninja' still dirty after 100 tries
+    # This is a targeted delete, NOT a robocopy /XD 'build': several npm
+    # packages ship real source in a build/ folder (see the note above).
+    foreach ($stale in 'android/build', 'android/app/build') {
+        Remove-Item (Join-Path $Staging $stale) -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # --- 3. point Gradle at the SDK ---------------------------------------------

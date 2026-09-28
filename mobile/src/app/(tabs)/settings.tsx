@@ -123,6 +123,12 @@ export default function SettingsScreen() {
             onChange={(v) => update('hapticsOnModeChange', v)}
           />
           <ToggleRow
+            title="Voice guidance"
+            subtitle="Speak turn instructions and mode changes aloud"
+            value={settings.voiceGuidance}
+            onChange={(v) => update('voiceGuidance', v)}
+          />
+          <ToggleRow
             last
             title="Technical details"
             subtitle="Show checkpoint hashes, τ and filter equations in the AI panel"

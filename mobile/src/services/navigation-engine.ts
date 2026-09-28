@@ -83,6 +83,23 @@ export function nextMode({
 }
 
 /**
+ * Is the inference backend actually producing, or only warmed up?
+ *
+ * `windows_inferred > 0` is proof the frozen model has run at least once on THIS
+ * session. Raw buffer fill only says the 50-sample ring holds 50 entries — and
+ * on a real device sample timestamps can drift enough that every window fails
+ * the frozen 10 Hz contiguity check (see `rejected_windows`). Gating readiness
+ * on buffer fill let that broken case look identical to a healthy one: the mode
+ * flipped to DEAD_RECKONING and stayed there reporting a frozen position with
+ * zero real inferences behind it. Merged from the parallel `main` line, where
+ * this was found independently; it complements the fixed-grid emitter in
+ * `sensors.ts`, which removes the drift that caused the rejections.
+ */
+export function isInferenceReady(windowsInferred: number): boolean {
+  return windowsInferred > 0;
+}
+
+/**
  * Confirmation gate, measured in SECONDS.
  *
  * The previous implementation counted consecutive agreeing readings. That is
@@ -466,7 +483,9 @@ export class NavigationEngine {
 
   // ------------------------------------------------------------------ modes
   private recomputeMode() {
-    const windowReady = this.state.windowFill >= this.state.windowRequired;
+    // Readiness is "the model has actually produced", not "the buffer is full":
+    // a full buffer whose windows are all rejected on timing must NOT count.
+    const windowReady = isInferenceReady(this.state.serviceState?.windows_inferred ?? 0);
     const target = nextMode({
       navigating: this.navigating,
       gnss: this.state.gnss.state,
@@ -610,7 +629,7 @@ export class NavigationEngine {
   simulateOutage(on: boolean) {
     this.gnss.setSimulatedOutage(on);
     this.set({ gnss: this.gnss.status() });
-    const windowReady = this.state.windowFill >= this.state.windowRequired;
+    const windowReady = isInferenceReady(this.state.serviceState?.windows_inferred ?? 0);
     this.forceMode(
       nextMode({
         navigating: this.navigating,
