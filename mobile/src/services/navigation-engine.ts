@@ -264,6 +264,12 @@ export class NavigationEngine {
     onDevice.constraintsEnabled = on;
   }
 
+  /** Snap the dead-reckoned path onto the offline road graph during an outage.
+   *  Takes effect on the next outage. See `map-matching.ts`. */
+  setMapMatching(on: boolean) {
+    onDevice.mapMatchingEnabled = on;
+  }
+
   async start(): Promise<{ ok: boolean; error?: string }> {
     if (this.navigating) return { ok: true };
     this.state = { ...EMPTY, startedAt: Date.now() };

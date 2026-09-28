@@ -27,6 +27,8 @@ import type { InferenceSession as OrtSession } from 'onnxruntime-react-native';
 import { FROZEN } from './config';
 import { fuseAndDeadReckon, deadReckon, type FusionConstants } from './frozen-fusion';
 import { applyMotionConstraints, isStationaryWindow } from './motion-constraints';
+import { mapMatch, DEFAULT_MAP_MATCH } from './map-matching';
+import { graphForRegion } from './map-graph';
 import { bearingFromFrozenHeading, localToLatLng } from './geo';
 import type {
   DeadReckoningState,
@@ -140,7 +142,13 @@ class LocalOutage {
     readonly startedAtS: number,
     /** false reproduces the frozen behaviour exactly, sample for sample */
     readonly constraintsEnabled = true,
+    /** snap the dead-reckoned path onto the offline road graph. Outside the
+     *  frozen boundary; off reproduces the unconstrained result exactly. */
+    readonly mapMatchingEnabled = false,
   ) {}
+
+  /** fraction of the last recompute's path that snapped to a road, for telemetry */
+  matchedFraction = 0;
 
   get samples() {
     return this.dv.length;
@@ -195,6 +203,21 @@ class LocalOutage {
     };
     const path: LatLng[] = new Array(dr.x.length);
     for (let i = 0; i < dr.x.length; i += 1) path[i] = localToLatLng(dr.x[i], dr.y[i], origin);
+
+    // Map-matching, OUTSIDE the frozen boundary: snap the finished path onto the
+    // offline road graph. It corrects the cross-track component of heading drift,
+    // which dominates the mid-outage error. Off, or with no graph for the area,
+    // leaves the frozen path untouched.
+    this.matchedFraction = 0;
+    if (this.mapMatchingEnabled) {
+      const graph = graphForRegion({ latitude: this.anchor.latitude, longitude: this.anchor.longitude });
+      if (graph) {
+        const heads = Array.from(dr.h, (h) => bearingFromFrozenHeading(this.anchor.bearing_deg ?? 0, h));
+        const res = mapMatch(path, heads, graph, DEFAULT_MAP_MATCH, true);
+        this.matchedFraction = res.matchedFraction;
+        for (let i = 0; i < path.length; i += 1) path[i] = res.path[i];
+      }
+    }
     this.path = path;
   }
 
@@ -390,10 +413,15 @@ export class OnDeviceInference {
    *  frozen behaviour exactly; see `motion-constraints.ts`. */
   constraintsEnabled = true;
 
+  /** Snap the dead-reckoned path onto the offline road graph. Outside the frozen
+   *  boundary; off reproduces the unconstrained result exactly. See
+   *  `map-matching.ts`. */
+  mapMatchingEnabled = false;
+
   startOutage(anchor: OutageAnchor) {
     if (this.outage) throw new OnDeviceModelError('an outage is already active');
     const startedAt = anchor.timestamp_s ?? this.buf[this.buf.length - 1]?.t ?? 0;
-    this.outage = new LocalOutage(anchor, startedAt, this.constraintsEnabled);
+    this.outage = new LocalOutage(anchor, startedAt, this.constraintsEnabled, this.mapMatchingEnabled);
     return this.state();
   }
 
